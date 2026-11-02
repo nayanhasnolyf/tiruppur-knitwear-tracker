@@ -3,19 +3,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import {
-  AlertTriangle,
   Camera,
-  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   CloudOff,
-  ExternalLink,
-  Languages,
   Loader2,
   Mic,
   MicOff,
   RefreshCw,
-  Send,
-  Smartphone,
-  Sparkles,
   Trash2,
   Wifi,
 } from 'lucide-react';
@@ -27,74 +22,69 @@ const STAGE_TAMIL_LABELS: Record<string, string> = {
   PRINTING: 'பிரிண்டிங் (Printing)',
   STITCHING: 'தையல் (Stitching)',
   WASHING: 'வாஷிங் (Washing)',
-  FINISHING: 'பினிஷிங் & பேக்கிங் (Finishing)',
+  FINISHING: 'பினிஷிங் (Finishing)',
 };
 
 const SAMPLE_TAMIL_CHIPS = [
   {
     id: 'machine',
-    badgeEn: '🔧 Machine Breakdown (High Conf)',
-    badgeTa: '🔧 இயந்திரப் பழுது (ஊசி உடைந்தது)',
+    badgeEn: 'Machine Breakdown (High Conf)',
+    badgeTa: 'இயந்திரப் பழுது (ஊசி உடைந்தது)',
     tamilText:
       'ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் இன்று 3 மணி நேரம் வேலை செய்யவில்லை',
   },
   {
     id: 'rework',
-    badgeEn: '🧼 Collar Stain Rework (High Conf)',
-    badgeTa: '🧼 காலர் எண்ணெய் கறை (ரீ-வாஷிங்)',
+    badgeEn: 'Collar Stain Rework (High Conf)',
+    badgeTa: 'காலர் எண்ணெய் கறை (ரீ-வாஷிங்)',
     tamilText:
       'காலர் பகுதியில் எண்ணெய் கறை உள்ளது, 120 பீஸ் மறுபடியும் வாஷிங் செய்ய வேண்டும்',
   },
   {
     id: 'power',
-    badgeEn: '⚡ Power Cut (High Conf)',
-    badgeTa: '⚡ மின்சாரம் தடை (ஜெனரேட்டர் பழுது)',
+    badgeEn: 'Power Cut (High Conf)',
+    badgeTa: 'மின்சாரம் தடை (ஜெனரேட்டர் பழுது)',
     tamilText:
       'மின்சாரம் தடைபட்டது, ஜெனரேட்டர் பழுது காரணமாக 2 மணி நேரம் தாமதம்',
   },
   {
     id: 'vague',
-    badgeEn: '❓ Vague Note (Tests AI <70% Uncertain Guardrail)',
-    badgeTa: '❓ தெளிவற்ற குறிப்பு (AI சந்தேக சோதனை)',
+    badgeEn: 'Vague Note (<70% Conf Guardrail)',
+    badgeTa: 'தெளிவற்ற குறிப்பு (AI சந்தேக சோதனை)',
     tamilText: 'இன்று வேலை சற்று மெதுவாக நடக்கிறது',
   },
 ];
 
-// Self-contained SVG data URLs for 1-click floor photo presets (works 100% offline!)
 const SAMPLE_PHOTO_PRESETS = [
   {
     id: 'bundle-tag',
-    labelEn: 'Stitching Bundle Tag #B88213',
-    labelTa: 'தையல் பண்டில் டேக் #B88213',
+    labelEn: 'Bundle Tag #B88213',
+    labelTa: 'பண்டில் டேக் #B88213',
     dataUrl:
       'data:image/svg+xml;utf8,' +
       encodeURIComponent(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
-          <rect width="320" height="200" fill="#0f172a"/>
-          <rect x="16" y="16" width="288" height="168" rx="8" fill="#1e293b" stroke="#475569" stroke-width="2"/>
-          <text x="32" y="52" fill="#f8fafc" font-family="monospace" font-size="15" font-weight="bold">TIRUPPUR UNIT 1 · FLOOR TAG</text>
-          <text x="32" y="84" fill="#38bdf8" font-family="monospace" font-size="13">PO: B-PO-88213 · NAVY CREW TEE</text>
-          <text x="32" y="112" fill="#e2e8f0" font-family="monospace" font-size="12">LINE 04 · STITCHING BUNDLE #19</text>
-          <rect x="32" y="130" width="140" height="32" rx="4" fill="#059669"/>
-          <text x="44" y="151" fill="#ffffff" font-family="monospace" font-size="12" font-weight="bold">QTY: 240 PCS OK</text>
+        `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="0 0 320 160">
+          <rect width="320" height="160" fill="#09090b"/>
+          <rect x="12" y="12" width="296" height="136" rx="6" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+          <text x="28" y="46" fill="#fafafa" font-family="monospace" font-size="13" font-weight="bold">TIRUPPUR UNIT 1 · FLOOR TAG</text>
+          <text x="28" y="74" fill="#a1a1aa" font-family="monospace" font-size="12">PO: B-PO-88213 · STITCHING</text>
+          <text x="28" y="102" fill="#e4e4e7" font-family="monospace" font-size="12">LINE 04 · BUNDLE #19 · 240 PCS</text>
         </svg>`
       ),
   },
   {
     id: 'collar-stain',
-    labelEn: 'QC Collar Stain Inspection Photo',
-    labelTa: 'காலர் எண்ணெய் கறை ஆய்வு படம்',
+    labelEn: 'QC Collar Rework Tag',
+    labelTa: 'காலர் கறை ஆய்வு படம்',
     dataUrl:
       'data:image/svg+xml;utf8,' +
       encodeURIComponent(
-        `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
-          <rect width="320" height="200" fill="#450a0a"/>
-          <rect x="16" y="16" width="288" height="168" rx="8" fill="#7f1d1d" stroke="#f87171" stroke-width="2"/>
-          <text x="32" y="50" fill="#fef2f2" font-family="monospace" font-size="15" font-weight="bold">UNIT 2 QC · REWORK HOLD TAG</text>
-          <text x="32" y="82" fill="#fca5a5" font-family="monospace" font-size="13">PO: B-PO-88240 · WHITE POLO</text>
-          <text x="32" y="110" fill="#fecaca" font-family="monospace" font-size="12">ISSUE: COLLAR OIL STAIN (RE-WASH)</text>
-          <rect x="32" y="130" width="180" height="32" rx="4" fill="#d97706"/>
-          <text x="42" y="151" fill="#ffffff" font-family="monospace" font-size="12" font-weight="bold">HOLD: SPOT WASH LINE</text>
+        `<svg xmlns="http://www.w3.org/2000/svg" width="320" height="160" viewBox="0 0 320 160">
+          <rect width="320" height="160" fill="#18181b"/>
+          <rect x="12" y="12" width="296" height="136" rx="6" fill="#27272a" stroke="#71717a" stroke-width="1"/>
+          <text x="28" y="46" fill="#fafafa" font-family="monospace" font-size="13" font-weight="bold">UNIT 2 QC · REWORK HOLD</text>
+          <text x="28" y="74" fill="#d4d4d8" font-family="monospace" font-size="12">PO: B-PO-88240 · WHITE POLO</text>
+          <text x="28" y="102" fill="#fca5a5" font-family="monospace" font-size="12">ISSUE: COLLAR OIL STAIN (RE-WASH)</text>
         </svg>`
       ),
   },
@@ -146,10 +136,11 @@ export default function SupervisorMobilePage() {
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [loadingOrders, setLoadingOrders] = useState(true);
 
-  // 3-Part Form State
+  // 3-Part Minimal Form State
   const [qtyDoneToday, setQtyDoneToday] = useState<string>('240');
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [rawNoteTamil, setRawNoteTamil] = useState<string>('');
+  const [showPresets, setShowPresets] = useState(false);
   const [isListeningVoice, setIsListeningVoice] = useState(false);
 
   // Offline & Sync Queue State
@@ -172,7 +163,6 @@ export default function SupervisorMobilePage() {
 
   const isOffline = isSimulatedOffline || browserOffline;
 
-  // Load localStorage queue on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(OFFLINE_QUEUE_STORAGE_KEY);
@@ -237,7 +227,6 @@ export default function SupervisorMobilePage() {
     [orders, selectedOrderId]
   );
 
-  // Sync queued items when returning online
   const syncOfflineQueueNow = useCallback(async () => {
     if (isOffline || offlineQueue.length === 0 || syncingQueue) return;
 
@@ -279,25 +268,23 @@ export default function SupervisorMobilePage() {
         type: 'success',
         title:
           lang === 'ta'
-            ? `✅ ${syncedCount} ஆஃப்லைன் பதிவுகள் சர்வருடன் இணைக்கப்பட்டன!`
-            : `✅ Synced ${syncedCount} queued offline floor update(s) to server!`,
+            ? `${syncedCount} ஆஃப்லைன் பதிவுகள் ஒத்திசைக்கப்பட்டன`
+            : `Synced ${syncedCount} offline update(s)`,
         detail:
           lang === 'ta'
-            ? 'இரட்டைப் பதிவு தடுக்கப்பட்டது (Idempotent clientSubmissionId சரிபார்க்கப்பட்டது).'
-            : 'Idempotency verified via unique clientSubmissionId — zero duplicate counts.',
+            ? 'Idempotent clientSubmissionId சரிபார்க்கப்பட்டது.'
+            : 'Idempotency verified via unique clientSubmissionId.',
       });
       fetchOrders();
     }
   }, [isOffline, offlineQueue, syncingQueue, lang, fetchOrders]);
 
-  // Auto-flush queue when toggling Simulate Offline back to Online
   useEffect(() => {
     if (!isOffline && offlineQueue.length > 0) {
       syncOfflineQueueNow();
     }
   }, [isOffline, offlineQueue.length, syncOfflineQueueNow]);
 
-  // Web Speech API Tamil Voice Recognition
   const handleToggleTamilVoice = () => {
     const SpeechRecognitionAPI =
       (window as unknown as Record<string, unknown>).SpeechRecognition ||
@@ -337,21 +324,14 @@ export default function SupervisorMobilePage() {
         setIsListeningVoice(false);
       };
 
-      recognition.onerror = () => {
-        setIsListeningVoice(false);
-      };
-
-      recognition.onend = () => {
-        setIsListeningVoice(false);
-      };
-
+      recognition.onerror = () => setIsListeningVoice(false);
+      recognition.onend = () => setIsListeningVoice(false);
       recognition.start();
     } catch {
       setIsListeningVoice(false);
     }
   };
 
-  // Handle file upload -> compact Data URL
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -374,8 +354,8 @@ export default function SupervisorMobilePage() {
         type: 'error',
         title:
           lang === 'ta'
-            ? 'சரியான எண்ணிக்கையை உள்ளிடவும் (0 அல்லது அதற்கு மேல்)'
-            : 'Please enter a valid non-negative piece quantity.',
+            ? 'சரியான எண்ணிக்கையை உள்ளிடவும்'
+            : 'Please enter a valid quantity.',
       });
       return;
     }
@@ -397,7 +377,6 @@ export default function SupervisorMobilePage() {
       queuedAt: new Date().toISOString(),
     };
 
-    // If Offline (or Simulate Offline is ON), store in localStorage queue
     if (isOffline) {
       const updatedQueue = [...offlineQueue, payload];
       saveOfflineQueue(updatedQueue);
@@ -406,12 +385,9 @@ export default function SupervisorMobilePage() {
         type: 'offline',
         title:
           lang === 'ta'
-            ? '📦 ஆஃப்லைனில் சேமிக்கப்பட்டது! (Saved to Phone Offline Queue)'
-            : '📦 Saved to Phone Offline Queue (No Signal Needed)',
-        detail:
-          lang === 'ta'
-            ? `${selectedOrder.poNumber}: +${parsedQty} பீஸ். இணையம் வந்தவுடன் தானாக சர்வரில் ஏறும்.`
-            : `${selectedOrder.poNumber}: +${parsedQty} pcs queued locally. Switch back to Online above to auto-sync.`,
+            ? 'ஆஃப்லைனில் சேமிக்கப்பட்டது (Saved to Offline Queue)'
+            : 'Saved to Phone Offline Queue',
+        detail: `${selectedOrder.poNumber}: +${parsedQty} pcs queued locally.`,
       });
       return;
     }
@@ -441,8 +417,8 @@ export default function SupervisorMobilePage() {
         type: 'success',
         title:
           lang === 'ta'
-            ? `✅ பதிவு ஏற்றுக்கொள்ளப்பட்டது (+${parsedQty} பீஸ்)`
-            : `✅ Floor Update Logged (+${parsedQty.toLocaleString()} pcs)`,
+            ? `பதிவு செய்யப்பட்டது (+${parsedQty} பீஸ்)`
+            : `Logged +${parsedQty.toLocaleString()} pcs`,
         detail: `${selectedOrder.poNumber} · ${selectedOrder.activeMilestone.stageName}`,
         aiTranslation: created.aiEnglishTranslation,
         aiCategory: created.finalReasonCategory || created.aiReasonCategory,
@@ -452,12 +428,11 @@ export default function SupervisorMobilePage() {
 
       await fetchOrders();
     } catch {
-      // Network dropped mid-request -> automatically save to offline queue!
       const updatedQueue = [...offlineQueue, payload];
       saveOfflineQueue(updatedQueue);
       setFeedbackBanner({
         type: 'offline',
-        title: 'Network dropped — Saved safely to phone offline queue!',
+        title: 'Saved to phone offline queue',
       });
     } finally {
       setSubmitting(false);
@@ -465,307 +440,187 @@ export default function SupervisorMobilePage() {
   };
 
   return (
-    <div className="mx-auto max-w-md pb-12">
-      {/* Top Reviewer Context Header */}
-      <div className="mb-3 flex items-center justify-between text-xs text-slate-500">
-        <span className="inline-flex items-center gap-1 font-mono text-[11px] font-medium text-slate-600">
-          <Smartphone className="h-3.5 w-3.5" />
-          Android Floor Terminal (Low-RAM Optimized)
-        </span>
-        {selectedOrder && (
-          <Link
-            href={`/orders/${selectedOrder.id}`}
-            className="inline-flex items-center gap-1 font-medium text-slate-800 underline hover:text-slate-900"
-          >
-            Inspect in Merchandiser View
-            <ExternalLink className="h-3 w-3" />
-          </Link>
-        )}
-      </div>
-
-      {/* Mobile Phone Frame Container */}
-      <div className="overflow-hidden rounded-2xl border-2 border-slate-800 bg-white shadow-lg">
-        {/* 1. Top Mobile Control Strip (Language Toggle + Offline Dead-Zone Simulator) */}
-        <div className="bg-slate-900 px-4 py-3 text-white">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <div className="text-xs font-bold tracking-wide">
-                {lang === 'ta'
-                  ? 'திருப்பூர் தரைத்தள பதிவு'
-                  : 'Floor Supervisor Entry'}
-              </div>
-              <div className="font-mono text-[10px] text-slate-400">
-                {lang === 'ta'
-                  ? 'தேதி: 02 நவம்பர் 2026'
-                  : 'Shift Date: 02 Nov 2026'}
-              </div>
-            </div>
-
-            {/* Language Switcher Pill */}
-            <button
-              type="button"
-              onClick={() => setLang((prev) => (prev === 'ta' ? 'en' : 'ta'))}
-              className="inline-flex items-center gap-1.5 rounded-full border border-slate-700 bg-slate-800 px-3 py-1 text-xs font-semibold text-white hover:bg-slate-700"
-            >
-              <Languages className="h-3.5 w-3.5 text-emerald-400" />
-              {lang === 'ta' ? 'தமிழ் · Switch to EN' : 'EN · தமிழ் மாற்ற'}
-            </button>
+    <div className="mx-auto max-w-md py-2">
+      {/* Main Minimal Card */}
+      <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+        {/* 1. Compact Header Bar: Title + Language + Offline Pill */}
+        <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4">
+          <div>
+            <h1 className="text-sm font-semibold text-zinc-950">
+              {lang === 'ta' ? 'தரைத்தள தினசரி பதிவு' : 'Floor Daily Entry'}
+            </h1>
+            <p className="font-mono text-[11px] text-zinc-400">02 Nov 2026</p>
           </div>
 
-          {/* Simulate Factory Dead Zone (Offline Mode) Toggle */}
-          <div className="mt-2.5 flex items-center justify-between rounded-lg border border-slate-700/80 bg-slate-800/90 px-3 py-2">
-            <div className="flex items-center gap-2 text-xs">
-              {isOffline ? (
-                <CloudOff className="h-4 w-4 text-amber-400" />
-              ) : (
-                <Wifi className="h-4 w-4 text-emerald-400" />
-              )}
-              <div>
-                <div className="font-semibold">
-                  {isOffline
-                    ? lang === 'ta'
-                      ? 'ஆஃப்லைன் நிலை (சிக்னல் இல்லை)'
-                      : 'Offline Mode (Factory Dead Zone)'
-                    : lang === 'ta'
-                    ? 'ஆன்லைன் நிலை (சர்வர் இணைப்பு)'
-                    : 'Online (Connected to Server)'}
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  {lang === 'ta'
-                    ? 'ஆஃப்லைன் வரிசையை சோதிக்க மாற்றவும்'
-                    : 'Toggle to test localStorage offline queue'}
-                </div>
-              </div>
-            </div>
-
+          <div className="flex items-center gap-2">
+            {/* Offline Simulator Pill */}
             <button
               type="button"
               onClick={() => setIsSimulatedOffline((prev) => !prev)}
-              className={`rounded-md px-2.5 py-1 font-mono text-[11px] font-bold transition ${
-                isSimulatedOffline
-                  ? 'bg-amber-500 text-slate-950 hover:bg-amber-400'
-                  : 'bg-slate-700 text-slate-200 hover:bg-slate-600'
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-mono text-[11px] font-medium transition ${
+                isOffline
+                  ? 'border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]'
+                  : 'border-zinc-200 bg-zinc-50 text-zinc-700 hover:border-zinc-950'
               }`}
             >
-              {isSimulatedOffline ? 'Go Online' : 'Simulate Offline'}
+              {isOffline ? (
+                <>
+                  <CloudOff className="h-3 w-3" />
+                  Offline
+                </>
+              ) : (
+                <>
+                  <Wifi className="h-3 w-3 text-[#10B981]" />
+                  Online
+                </>
+              )}
+            </button>
+
+            {/* Tamil / EN Toggle */}
+            <button
+              type="button"
+              onClick={() => setLang((prev) => (prev === 'ta' ? 'en' : 'ta'))}
+              className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 font-mono text-xs font-medium text-zinc-950 hover:bg-zinc-50"
+            >
+              {lang === 'ta' ? 'EN' : 'தமிழ்'}
             </button>
           </div>
         </div>
 
-        {/* 2. Offline Sync Queue Banner */}
+        {/* Offline Queue Strip (Only visible when items queued) */}
         {offlineQueue.length > 0 && (
-          <div className="border-b border-amber-200 bg-amber-50 px-4 py-3">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <CloudOff className="h-4 w-4 shrink-0 text-amber-700" />
-                <div className="text-xs">
-                  <div className="font-bold text-amber-900">
-                    {offlineQueue.length}{' '}
-                    {lang === 'ta'
-                      ? 'பதிவுகள் ஆஃப்லைன் வரிசையில் உள்ளன'
-                      : 'Update(s) Queued on Phone'}
-                  </div>
-                  <div className="font-mono text-[10px] text-amber-800">
-                    {offlineQueue
-                      .map((q) => `${q.poNumber} (+${q.qtyDoneToday})`)
-                      .join(', ')}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                disabled={isOffline || syncingQueue}
-                onClick={syncOfflineQueueNow}
-                className="inline-flex shrink-0 items-center gap-1 rounded-lg bg-amber-900 px-2.5 py-1.5 font-mono text-[11px] font-semibold text-white disabled:opacity-40"
-              >
-                <RefreshCw
-                  className={`h-3 w-3 ${syncingQueue ? 'animate-spin' : ''}`}
-                />
-                {isOffline ? 'Switch Online to Sync' : 'Sync Now'}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Feedback & AI Classification Toast Banner */}
-        {feedbackBanner && (
-          <div
-            className={`border-b px-4 py-3 text-xs ${
-              feedbackBanner.type === 'success'
-                ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
-                : feedbackBanner.type === 'offline'
-                ? 'border-amber-200 bg-amber-50 text-amber-900'
-                : 'border-rose-200 bg-rose-50 text-rose-900'
-            }`}
-          >
-            <div className="font-bold">{feedbackBanner.title}</div>
-            {feedbackBanner.detail && (
-              <div className="mt-0.5 text-[11px] opacity-90">
-                {feedbackBanner.detail}
-              </div>
-            )}
-            {feedbackBanner.aiTranslation && (
-              <div className="mt-2 rounded-lg border border-indigo-200 bg-white p-2.5 text-slate-800">
-                <div className="flex items-center justify-between font-mono text-[10px] font-semibold text-indigo-700">
-                  <span className="inline-flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" />
-                    AI: {feedbackBanner.aiCategory}
-                  </span>
-                  {feedbackBanner.aiConfidence !== null &&
-                    feedbackBanner.aiConfidence !== undefined && (
-                      <span>
-                        {Math.round(feedbackBanner.aiConfidence * 100)}% conf
-                      </span>
-                    )}
-                </div>
-                <div className="mt-1 text-xs font-medium">
-                  “{feedbackBanner.aiTranslation}”
-                </div>
-                {feedbackBanner.needsManualReview && (
-                  <div className="mt-1 inline-flex items-center gap-1 rounded bg-amber-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-amber-900">
-                    <AlertTriangle className="h-3 w-3" />
-                    Flagged for Merchandiser Manual Review (&lt;70% conf)
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 3. Dead-Simple 3-Part Floor Update Form */}
-        <form onSubmit={handleSubmitUpdate} className="space-y-5 p-4">
-          {/* Order & Active Stage Selector */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
-              {lang === 'ta'
-                ? 'ஆர்டர் & நிலை (Select Order & Stage)'
-                : 'Select Active Production Order'}
-            </label>
-
-            {loadingOrders ? (
-              <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading orders...
-              </div>
-            ) : (
-              <div className="mt-2 space-y-2">
-                {orders.map((o) => {
-                  const isSelected = selectedOrder?.id === o.id;
-                  const stageTa =
-                    STAGE_TAMIL_LABELS[o.currentStage] || o.currentStage;
-                  return (
-                    <button
-                      key={o.id}
-                      type="button"
-                      onClick={() => setSelectedOrderId(o.id)}
-                      className={`w-full rounded-xl border p-3 text-left transition ${
-                        isSelected
-                          ? 'border-slate-900 bg-slate-900 text-white shadow-xs'
-                          : 'border-slate-200 bg-slate-50 text-slate-800 hover:bg-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-bold">
-                          {o.poNumber}
-                        </span>
-                        <span
-                          className={`rounded px-2 py-0.5 font-mono text-[10px] font-semibold ${
-                            isSelected
-                              ? 'bg-emerald-500 text-slate-950'
-                              : 'bg-slate-200 text-slate-700'
-                          }`}
-                        >
-                          {lang === 'ta' ? stageTa : o.currentStage}
-                        </span>
-                      </div>
-                      <div
-                        className={`mt-1 text-xs ${
-                          isSelected ? 'text-slate-200' : 'text-slate-600'
-                        }`}
-                      >
-                        {o.styleName} · {o.productionUnit}
-                      </div>
-                      {o.activeMilestone && (
-                        <div
-                          className={`mt-1 font-mono text-[11px] tabular-nums ${
-                            isSelected ? 'text-slate-300' : 'text-slate-500'
-                          }`}
-                        >
-                          {lang === 'ta' ? 'முடிந்தது:' : 'Done:'}{' '}
-                          {o.activeMilestone.completedQty.toLocaleString()} /{' '}
-                          {o.activeMilestone.targetQty.toLocaleString()} pcs
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {/* PART 1: Big Numeric Quantity Input */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
-            <label className="block text-xs font-bold text-slate-800">
-              {lang === 'ta'
-                ? '1. இன்று முடித்த எண்ணிக்கை (Pieces Done Today) *'
-                : '1. Pieces Completed Today (இன்று முடித்த எண்ணிக்கை) *'}
-            </label>
-
-            <div className="mt-2 flex items-center gap-2">
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                required
-                value={qtyDoneToday}
-                onChange={(e) => setQtyDoneToday(e.target.value)}
-                className="w-full rounded-xl border-2 border-slate-300 bg-white px-4 py-3 font-mono text-2xl font-bold text-slate-900 tabular-nums focus:border-slate-900 focus:outline-none"
-              />
-              <span className="font-mono text-sm font-semibold text-slate-500">
-                PCS
+          <div className="flex items-center justify-between border-b border-[#FDE68A] bg-[#FFFBEB] px-6 py-3 text-xs text-[#B45309]">
+            <div>
+              <span className="font-semibold">
+                {offlineQueue.length} queued offline
+              </span>
+              <span className="ml-2 font-mono text-[11px]">
+                ({offlineQueue.map((q) => `+${q.qtyDoneToday}`).join(', ')})
               </span>
             </div>
+            <button
+              type="button"
+              disabled={isOffline || syncingQueue}
+              onClick={syncOfflineQueueNow}
+              className="inline-flex items-center gap-1 rounded bg-zinc-950 px-2.5 py-1 font-mono text-[11px] font-medium text-white disabled:opacity-40"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${syncingQueue ? 'animate-spin' : ''}`}
+              />
+              Sync
+            </button>
+          </div>
+        )}
 
-            {/* Quick Tap Pills */}
-            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-              {[0, 150, 240, 350, 420].map((preset) => (
+        {/* Submission Feedback Banner */}
+        {feedbackBanner && (
+          <div
+            className={`border-b px-6 py-3 text-xs ${
+              feedbackBanner.type === 'success'
+                ? 'border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]'
+                : feedbackBanner.type === 'offline'
+                ? 'border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]'
+                : 'border-[#FECDD3] bg-[#FFF1F2] text-[#BE123C]'
+            }`}
+          >
+            <div className="font-semibold">{feedbackBanner.title}</div>
+            {feedbackBanner.aiTranslation && (
+              <div className="mt-1.5 font-mono text-[11px] text-zinc-800">
+                AI ({feedbackBanner.aiCategory}): “{feedbackBanner.aiTranslation}”
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Main Form: Order Select -> Big Number -> Photo -> Note -> Send */}
+        <form onSubmit={handleSubmitUpdate} className="space-y-6 p-6">
+          {/* Order Selector */}
+          <div>
+            <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+              {lang === 'ta' ? 'ஆர்டர் (Order & Stage)' : 'Order & Stage'}
+            </label>
+            {loadingOrders ? (
+              <div className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Loading...
+              </div>
+            ) : (
+              <select
+                value={selectedOrderId}
+                onChange={(e) => setSelectedOrderId(e.target.value)}
+                className="mt-1.5 h-11 w-full rounded-lg border border-zinc-200 bg-white px-3 font-mono text-xs font-medium text-zinc-950 focus:border-zinc-950 focus:outline-none"
+              >
+                {orders.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.poNumber} ·{' '}
+                    {lang === 'ta'
+                      ? STAGE_TAMIL_LABELS[o.currentStage] || o.currentStage
+                      : o.currentStage}{' '}
+                    ({o.activeMilestone?.completedQty.toLocaleString()}/
+                    {o.activeMilestone?.targetQty.toLocaleString()} pcs)
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+
+          {/* 1. Big Numeric Display Input */}
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+                {lang === 'ta'
+                  ? 'இன்று முடித்த எண்ணிக்கை (Pieces Today)'
+                  : 'Pieces Completed Today'}
+              </label>
+              <span className="font-mono text-[11px] text-zinc-400">PCS</span>
+            </div>
+
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              required
+              value={qtyDoneToday}
+              onChange={(e) => setQtyDoneToday(e.target.value)}
+              className="mt-1.5 w-full rounded-lg border border-zinc-200 bg-zinc-50/50 py-4 text-center font-mono text-4xl font-semibold text-zinc-950 tabular-nums focus:border-zinc-950 focus:bg-white focus:outline-none"
+            />
+
+            <div className="mt-2.5 grid grid-cols-4 gap-2">
+              {[50, 100, 250].map((inc) => (
                 <button
-                  key={preset}
+                  key={inc}
                   type="button"
-                  onClick={() => setQtyDoneToday(String(preset))}
-                  className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 font-mono text-xs font-semibold text-slate-700 hover:border-slate-900 hover:bg-slate-900 hover:text-white"
+                  onClick={() =>
+                    setQtyDoneToday((prev) =>
+                      String((parseInt(prev || '0', 10) || 0) + inc)
+                    )
+                  }
+                  className="rounded-md border border-zinc-200 bg-white py-1.5 font-mono text-xs font-medium text-zinc-700 hover:border-zinc-950 hover:text-zinc-950"
                 >
-                  {preset} pcs
+                  +{inc}
                 </button>
               ))}
               <button
                 type="button"
-                onClick={() =>
-                  setQtyDoneToday((prev) =>
-                    String((parseInt(prev || '0', 10) || 0) + 50)
-                  )
-                }
-                className="rounded-lg border border-slate-300 bg-slate-200/70 px-2.5 py-1 font-mono text-xs font-bold text-slate-800 hover:bg-slate-300"
+                onClick={() => setQtyDoneToday('0')}
+                className="rounded-md border border-zinc-200 bg-zinc-100/70 py-1.5 font-mono text-xs font-medium text-zinc-500 hover:text-zinc-950"
               >
-                +50
+                Clear
               </button>
             </div>
           </div>
 
-          {/* PART 2: Floor Photo Attachment */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
+          {/* 2. Single Clean Photo Row */}
+          <div>
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800">
-                {lang === 'ta'
-                  ? '2. புகைப்படம் (Floor Bundle / Defect Photo)'
-                  : '2. Floor Photo (புகைப்படம் - Optional)'}
+              <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+                {lang === 'ta' ? 'புகைப்படம் (Photo)' : 'Photo (Optional)'}
               </label>
               {photoUrl && (
                 <button
                   type="button"
                   onClick={() => setPhotoUrl(null)}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-rose-600 hover:underline"
+                  className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-950"
                 >
                   <Trash2 className="h-3 w-3" />
                   Remove
@@ -774,22 +629,18 @@ export default function SupervisorMobilePage() {
             </div>
 
             {photoUrl ? (
-              <div className="mt-2 overflow-hidden rounded-lg border border-slate-200 bg-white p-2">
+              <div className="mt-1.5 overflow-hidden rounded-lg border border-zinc-200">
                 <img
                   src={photoUrl}
                   alt="Attached floor bundle"
-                  className="h-28 w-full rounded object-cover"
+                  className="h-24 w-full object-cover"
                 />
               </div>
             ) : (
-              <div className="mt-2 space-y-2">
-                <label className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-dashed border-slate-300 bg-white py-2.5 text-xs font-medium text-slate-700 hover:border-slate-900">
-                  <Camera className="h-4 w-4 text-slate-500" />
-                  <span>
-                    {lang === 'ta'
-                      ? 'கேமரா / படம் எடு (Take or Upload Photo)'
-                      : 'Take Camera Photo or Upload File'}
-                  </span>
+              <div className="mt-1.5 flex items-center gap-2">
+                <label className="flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 hover:border-zinc-950 hover:text-zinc-950">
+                  <Camera className="h-3.5 w-3.5 text-zinc-400" />
+                  <span>{lang === 'ta' ? 'படம் எடு' : 'Camera / Upload'}</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -798,170 +649,140 @@ export default function SupervisorMobilePage() {
                   />
                 </label>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {SAMPLE_PHOTO_PRESETS.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPhotoUrl(p.dataUrl)}
-                      className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-left text-[11px] font-medium text-slate-700 hover:border-slate-900"
-                    >
-                      📷 {lang === 'ta' ? p.labelTa : p.labelEn}
-                    </button>
-                  ))}
-                </div>
+                {SAMPLE_PHOTO_PRESETS.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPhotoUrl(p.dataUrl)}
+                    className="h-10 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 font-mono text-[11px] text-zinc-600 hover:border-zinc-950 hover:text-zinc-950"
+                  >
+                    {lang === 'ta' ? p.labelTa : p.labelEn}
+                  </button>
+                ))}
               </div>
             )}
           </div>
 
-          {/* PART 3: Optional Tamil Issue Note by Text or Voice + Reviewer Test Chips */}
-          <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5">
-            <div className="flex items-center justify-between gap-2">
-              <label className="block text-xs font-bold text-slate-800">
+          {/* 3. Clean Issue Note Field + Collapsible Tamil Test Presets */}
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                 {lang === 'ta'
-                  ? '3. தாமதக் காரணம் - தமிழ் எழுத்து / குரல்'
-                  : '3. Issue Note in Tamil (Text or Voice)'}
+                  ? 'குறிப்பு - தமிழ் (Optional Note)'
+                  : 'Tamil Floor Note (Optional)'}
               </label>
 
-              <button
-                type="button"
-                onClick={handleToggleTamilVoice}
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold transition ${
-                  isListeningVoice
-                    ? 'animate-pulse bg-rose-600 text-white'
-                    : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-100'
-                }`}
-              >
-                {isListeningVoice ? (
-                  <>
-                    <MicOff className="h-3 w-3" />
-                    Listening (ta-IN)...
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-3 w-3 text-rose-600" />
-                    🎤 தமிழ் குரல் (Voice)
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPresets((prev) => !prev)}
+                  className="inline-flex items-center gap-1 font-mono text-[11px] text-zinc-500 hover:text-zinc-950"
+                >
+                  <span>{lang === 'ta' ? 'மாதிரி' : 'Presets'}</span>
+                  {showPresets ? (
+                    <ChevronUp className="h-3 w-3" />
+                  ) : (
+                    <ChevronDown className="h-3 w-3" />
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleToggleTamilVoice}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[11px] font-medium transition ${
+                    isListeningVoice
+                      ? 'border-[#FECDD3] bg-[#FFF1F2] text-[#BE123C]'
+                      : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-950'
+                  }`}
+                >
+                  {isListeningVoice ? (
+                    <>
+                      <MicOff className="h-3 w-3" />
+                      Listening
+                    </>
+                  ) : (
+                    <>
+                      <Mic className="h-3 w-3" />
+                      Voice (ta)
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             <textarea
-              rows={3}
+              rows={2}
               value={rawNoteTamil}
               onChange={(e) => setRawNoteTamil(e.target.value)}
               placeholder={
                 lang === 'ta'
-                  ? 'எ.கா: ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் நின்றன...'
-                  : 'Type or speak in Tamil (e.g., ஊசி தட்டு உடைந்துவிட்டது...)'
+                  ? 'எ.கா: ஊசி தட்டு உடைந்துவிட்டது...'
+                  : 'Optional blocker note in Tamil...'
               }
-              className="mt-2 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm text-slate-900 focus:border-slate-900 focus:outline-none"
+              className="mt-1.5 w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
             />
 
-            {/* 1-Click Reviewer Test Tamil Chips */}
-            <div className="mt-2.5">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                {lang === 'ta'
-                  ? '1-கிளிக் மாதிரி தமிழ் குறிப்புகள் (Tap to test AI):'
-                  : '1-Click Sample Tamil Blocker Chips (Tap to test AI):'}
-              </div>
-              <div className="mt-1.5 flex flex-col gap-1.5">
+            {showPresets && (
+              <div className="mt-2 divide-y divide-zinc-200 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-50/70">
                 {SAMPLE_TAMIL_CHIPS.map((chip) => (
                   <button
                     key={chip.id}
                     type="button"
-                    onClick={() => setRawNoteTamil(chip.tamilText)}
-                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-left text-[11px] transition hover:border-slate-900 hover:bg-slate-50"
+                    onClick={() => {
+                      setRawNoteTamil(chip.tamilText);
+                      setShowPresets(false);
+                    }}
+                    className="block w-full px-3 py-2 text-left text-xs transition hover:bg-white"
                   >
-                    <div className="font-semibold text-slate-800">
+                    <div className="font-medium text-zinc-900">
                       {lang === 'ta' ? chip.badgeTa : chip.badgeEn}
                     </div>
-                    <div className="truncate text-[11px] text-slate-500">
-                      “{chip.tamilText}”
+                    <div className="truncate text-[11px] text-zinc-500">
+                      {chip.tamilText}
                     </div>
                   </button>
                 ))}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Big Send Button */}
+          {/* 4. Full-Width Solid Black Send Button */}
           <button
             type="submit"
             disabled={submitting || !selectedOrder}
-            className={`flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold text-white shadow-sm transition disabled:opacity-50 ${
-              isOffline
-                ? 'bg-amber-600 hover:bg-amber-700'
-                : 'bg-slate-900 hover:bg-slate-800'
-            }`}
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 text-sm font-medium text-white transition hover:bg-zinc-800 disabled:opacity-50"
           >
             {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                {lang === 'ta'
-                  ? 'AI மொழிபெயர்த்து சேமிக்கிறது...'
-                  : 'Translating & Saving Floor Update...'}
-              </>
+              <Loader2 className="h-4 w-4 animate-spin" />
             ) : isOffline ? (
-              <>
-                <CloudOff className="h-4 w-4" />
-                {lang === 'ta'
-                  ? 'ஆஃப்லைனில் சேமி (Save to Offline Queue)'
-                  : 'Save Update to Phone Offline Queue'}
-              </>
+              lang === 'ta' ? (
+                'ஆஃப்லைனில் சேமி (Save Offline)'
+              ) : (
+                'Save to Offline Queue'
+              )
+            ) : lang === 'ta' ? (
+              'அனுப்பு (Send Update)'
             ) : (
-              <>
-                <Send className="h-4 w-4" />
-                {lang === 'ta'
-                  ? 'அனுப்பு (Submit Daily Floor Update)'
-                  : 'Submit Floor Update (அனுப்பு)'}
-              </>
+              'Send Floor Update'
             )}
           </button>
         </form>
 
-        {/* 4. Recent Floor Submissions List */}
+        {/* Minimal Footer Link */}
         {selectedOrder && (
-          <div className="border-t border-slate-200 bg-slate-50 p-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-              {lang === 'ta'
-                ? `${selectedOrder.poNumber} - சமீபத்திய பதிவுகள்`
-                : `Recent Floor Logs · ${selectedOrder.poNumber}`}
-            </h3>
-
-            <div className="mt-2.5 space-y-2">
-              {selectedOrder.dailyUpdates.slice(0, 5).map((u) => (
-                <div
-                  key={u.id}
-                  className="rounded-lg border border-slate-200 bg-white p-2.5 text-xs"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-slate-900 tabular-nums">
-                      +{u.qtyDoneToday.toLocaleString()} pcs
-                    </span>
-                    <span className="inline-flex items-center gap-1 font-mono text-[10px] text-emerald-700">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Synced · {new Date(u.workDate).toISOString().slice(0, 10)}
-                    </span>
-                  </div>
-                  {u.rawNoteTamil && (
-                    <div className="mt-1.5 border-t border-slate-100 pt-1.5">
-                      <div className="text-[11px] text-slate-700">
-                        “{u.rawNoteTamil}”
-                      </div>
-                      <div className="mt-0.5 font-mono text-[10px] text-indigo-700">
-                        → AI: {u.finalReasonCategory || u.aiReasonCategory} (“
-                        {u.aiEnglishTranslation}”)
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
+          <div className="flex items-center justify-between border-t border-zinc-200 bg-zinc-50/60 px-6 py-3 text-xs text-zinc-500">
+            <span className="font-mono">
+              {selectedOrder.dailyUpdates.length} logs recorded
+            </span>
+            <Link
+              href={`/orders/${selectedOrder.id}`}
+              className="font-medium text-zinc-950 hover:underline"
+            >
+              Inspect Order →
+            </Link>
           </div>
         )}
       </div>
     </div>
   );
 }
-

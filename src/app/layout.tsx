@@ -28,11 +28,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
-      <body className="min-h-screen bg-[#FAFAFA] font-sans text-slate-900 antialiased">
+      <body className="min-h-screen bg-[#FAFAFA] font-sans text-zinc-950 antialiased">
         <Navbar />
-        <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">{children}</main>
+        <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">{children}</main>
       </body>
     </html>
   );
 }
-

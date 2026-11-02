@@ -122,12 +122,13 @@ All dates are normalized to UTC midnight (`toUtcMidnightMs`) so time-of-day neve
 
 ---
 
-## 6. UI & Design Decisions Across the 6 Key Screens
+## 6. UI & Design Decisions Across the 6 Key Screens (`DESIGN.md` System)
 
-Following the brief's minimalist design mandate (*"clean layouts, white space, a restrained palette and clear type, with nothing on screen that lacks a purpose"*):
-- **Merchandiser Order Board (`/`) & Order Detail (`/orders/[id]`)**: Uses an off-white canvas (`#FAFAFA`), pure white cards (`#FFFFFF`) with `1px solid #E2E8F0` borders, `Inter` for headings, and `JetBrains Mono` (`tabular-nums`) for all piece counts, dates, and run-rate formulas. Every order card includes a dedicated **"Shows Its Maths"** calculation panel.
-- **Supervisor Mobile Floor Terminal (`/supervisor`)**: Constrained to a single-column mobile viewport (`max-w-md`) with full **Tamil / English (`தமிழ் / EN`)** toggle, oversized numeric input (`inputMode="numeric"`), quick-tap quantity pills (`150`, `240`, `350`, `+50`), Web Speech API Tamil voice input (`ta-IN`), 1-click sample Tamil blocker chips, and a **Simulate Offline Mode** switch backed by `localStorage`.
-- **Isolated Read-Only Buyer Portal (`/buyer/[token]`)**: Clean sourcing & compliance view with TNA progress bars, confirmed production advisories, compliance date-change audit table, and 1-click **Weekly Status CSV/Excel & Print/PDF export**.
+Following the brief's minimalist design mandate (*"clean layouts, white space, a restrained palette and clear type, with nothing on screen that lacks a purpose; the order board must show which orders are in trouble at a glance; the supervisor screen needs only numbers, a photo and a send button"*), the UI is governed by [`DESIGN.md`](./DESIGN.md), adapting the light-mode operational restraint of `Cal.com` and `Vercel` (`VoltAgent/awesome-design-md`):
+- **95% Monochrome Hairline Architecture**: Canvas `#FAFAFA`, pure white surfaces `#FFFFFF` separated by `1px solid #E4E4E7` (`border-zinc-200`) hairlines, `#09090B` primary ink and solid black CTAs, with zero drop-shadows or nested box-in-box clutter. Decorative colored badges for buyers, units, and stages are banned; color is reserved exclusively for the 3 schedule status signals (`RED`, `AMBER`, `GREEN`).
+- **Merchandiser Order Board (`/`) & Order Detail (`/orders/[id]`)**: Uses a single 4-column hairline metric strip, a 4-column horizontal order board layout (`Identity | Stage & 4px Progress Bar | Run-Rate Math | Status Pill`), and a 2-column side-by-side editorial split comparing the Original Tamil Floor Note with the AI English Translation.
+- **Supervisor Mobile Floor Terminal (`/supervisor`)**: Literally *"only numbers, a photo and a send button"* — a calm `max-w-md` card with a centered `36px` `font-mono` numeric input, 4 quick-tap pills (`+50`, `+100`, `+250`, `Clear`), 1-row photo attachment, clean Tamil voice/text input with collapsible presets, and a full-width `h-12 bg-zinc-950` Send button.
+- **Isolated Read-Only Buyer Portal (`/buyer/[token]`)**: Executive status view with hairline TNA progress cells, confirmed production advisories, compliance date-change audit log, and 1-click **Weekly Status CSV/Excel & Print/PDF export**.
 
 ---
 

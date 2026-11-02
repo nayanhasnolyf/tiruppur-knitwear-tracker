@@ -289,10 +289,10 @@ async function generateDocx() {
           ),
 
           // Section 5
-          heading1('5. UI Design & Scope Cuts'),
+          heading1('5. UI Design System (DESIGN.md) & Scope Cuts'),
           bulletItem(
-            'Purposeful Minimalist UI',
-            'Merchandiser screens use high-density tabular numerals (JetBrains Mono) and explicit "Shows Its Maths" formula boxes; the Supervisor screen (/supervisor) is a dead-simple bilingual (தமிழ் / EN) mobile terminal with big numeric inputs, 1-click Tamil blocker chips, and a localStorage offline queue simulator.'
+            '95% Monochrome Hairline System (DESIGN.md)',
+            'Adapted from Cal.com and Vercel DESIGN.md tokens: #FAFAFA canvas, #FFFFFF surfaces with 1px solid #E4E4E7 hairlines, #09090B primary ink/CTAs, Inter headings, and JetBrains Mono tabular numerals. Color is reserved strictly for RED, AMBER, and GREEN schedule status pills. The Supervisor screen (/supervisor) features only numbers (36px centered input), a photo row, optional Tamil voice/text note, and a full-width solid black Send button.'
           ),
           bulletItem(
             'Deliberate Scope Cuts',

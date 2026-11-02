@@ -3,16 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import {
-  Factory,
-  Smartphone,
-  ExternalLink,
-  LogIn,
-  LogOut,
-  ShieldCheck,
-  UserCheck,
-  RefreshCw,
-} from 'lucide-react';
+import { LogOut, RefreshCw } from 'lucide-react';
 
 interface SessionUser {
   id: string;
@@ -86,116 +77,52 @@ export default function Navbar() {
   const isBuyerDE = pathname.includes('de-company-c-readonly-2026');
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      {/* Top Main Bar */}
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-3">
+    <header className="sticky top-0 z-40 h-14 border-b border-zinc-200 bg-white/90 backdrop-blur print:hidden">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
+        {/* Left: Minimal Monochrome Brand + Primary Links */}
+        <div className="flex items-center gap-6">
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-slate-900 hover:opacity-90"
+            className="flex items-center gap-2 text-zinc-950 transition hover:opacity-80"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm">
-              <Factory className="h-4 w-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-semibold tracking-tight text-slate-900">
-                  TiruppurKnit Ops
-                </span>
-                <span className="hidden rounded border border-slate-200 bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wider text-slate-600 sm:inline-block">
-                  Export TNA &amp; Floor AI
-                </span>
-              </div>
-              <p className="text-xs text-slate-500">
-                Company A · Tiruppur Knitwear Production &amp; Delay Projection
-              </p>
-            </div>
+            <span className="flex h-6 w-6 items-center justify-center rounded bg-zinc-950 font-mono text-xs font-bold text-white">
+              T
+            </span>
+            <span className="text-sm font-semibold tracking-tight">
+              TiruppurKnit
+            </span>
+            <span className="hidden font-mono text-[11px] text-zinc-400 sm:inline">
+              / Export TNA
+            </span>
           </Link>
-        </div>
 
-        {/* Primary Nav Links + Current User Badge */}
-        <div className="flex items-center gap-2.5">
           <nav className="hidden items-center gap-1 md:flex">
             <Link
               href="/"
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
                 isMerchandiserView
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-zinc-100 text-zinc-950'
+                  : 'text-zinc-500 hover:text-zinc-950'
               }`}
             >
-              Order Board
+              Orders
             </Link>
             <Link
               href="/supervisor"
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
                 isSupervisorView
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  ? 'bg-zinc-100 text-zinc-950'
+                  : 'text-zinc-500 hover:text-zinc-950'
               }`}
             >
-              <Smartphone className="h-3.5 w-3.5" />
-              Supervisor Mobile
+              Floor Entry
             </Link>
           </nav>
-
-          <div className="h-4 w-px bg-slate-200 hidden md:block" />
-
-          {user ? (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs">
-                {user.role === 'MERCHANDISER' ? (
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                ) : (
-                  <UserCheck className="h-3.5 w-3.5 text-blue-600" />
-                )}
-                <span className="font-medium text-slate-800">{user.name}</span>
-                <span
-                  className={`rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase ${
-                    user.role === 'MERCHANDISER'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-blue-100 text-blue-800'
-                  }`}
-                >
-                  {user.role}
-                  {user.assignedUnit ? ` · ${user.assignedUnit}` : ''}
-                </span>
-              </div>
-              <Link
-                href="/login"
-                className="rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              >
-                Switch User
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                title="Sign out"
-                className="rounded-md border border-slate-200 bg-white p-1.5 text-slate-500 hover:bg-slate-50 hover:text-rose-600"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
-            >
-              <LogIn className="h-3.5 w-3.5" />
-              Sign In
-            </Link>
-          )}
         </div>
-      </div>
 
-      {/* Reviewer 1-Click Role & Portal Switcher Bar */}
-      <div className="border-t border-slate-100 bg-slate-50/90 px-4 py-1.5 sm:px-6">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="font-mono text-[11px] font-medium uppercase tracking-wider text-slate-400 mr-1">
-              1-Click Demo Switcher:
-            </span>
-
+        {/* Right: Compact Segmented Role/Portal Switcher + Active User */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-100/80 p-0.5 text-xs">
             <button
               type="button"
               disabled={switchingTo !== null}
@@ -206,18 +133,16 @@ export default function Navbar() {
                   'merchandiser'
                 )
               }
-              className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition ${
                 isMerchandiserView && user?.role === 'MERCHANDISER'
-                  ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                  ? 'bg-white text-zinc-950 shadow-2xs'
+                  : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
-              {switchingTo === 'merchandiser' ? (
+              {switchingTo === 'merchandiser' && (
                 <RefreshCw className="h-3 w-3 animate-spin" />
-              ) : (
-                <ShieldCheck className="h-3 w-3" />
               )}
-              1. Merchandiser Board
+              Merchandiser
             </button>
 
             <button
@@ -230,54 +155,70 @@ export default function Navbar() {
                   'supervisor'
                 )
               }
-              className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition ${
                 isSupervisorView
-                  ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                  ? 'bg-white text-zinc-950 shadow-2xs'
+                  : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
-              {switchingTo === 'supervisor' ? (
+              {switchingTo === 'supervisor' && (
                 <RefreshCw className="h-3 w-3 animate-spin" />
-              ) : (
-                <Smartphone className="h-3 w-3" />
               )}
-              2. Supervisor Floor Mobile (Tamil/EN)
+              Supervisor
             </button>
 
             <Link
               href="/buyer/uk-company-b-readonly-2026"
-              className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              className={`rounded-md px-2.5 py-1 font-medium transition ${
                 isBuyerUK
-                  ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                  ? 'bg-white text-zinc-950 shadow-2xs'
+                  : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
-              <ExternalLink className="h-3 w-3" />
-              3. Buyer Portal: Company B (UK)
+              Buyer: UK
             </Link>
 
             <Link
               href="/buyer/de-company-c-readonly-2026"
-              className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition ${
+              className={`hidden rounded-md px-2.5 py-1 font-medium transition sm:inline-block ${
                 isBuyerDE
-                  ? 'border-slate-900 bg-slate-900 text-white shadow-sm'
-                  : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-100'
+                  ? 'bg-white text-zinc-950 shadow-2xs'
+                  : 'text-zinc-600 hover:text-zinc-950'
               }`}
             >
-              <ExternalLink className="h-3 w-3" />
-              4. Buyer Portal: Company C (DE)
+              Buyer: DE
             </Link>
           </div>
 
-          <div className="hidden items-center gap-1.5 font-mono text-[11px] text-slate-500 lg:flex">
-            <span>Demo Anchor Date:</span>
-            <span className="rounded bg-slate-200/70 px-1.5 py-0.5 font-semibold text-slate-800">
-              02 Nov 2026
-            </span>
-          </div>
+          <div className="hidden h-4 w-px bg-zinc-200 lg:block" />
+
+          {user ? (
+            <div className="hidden items-center gap-2 lg:flex">
+              <Link
+                href="/login"
+                className="font-mono text-xs text-zinc-600 hover:text-zinc-950"
+              >
+                {user.name}
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Sign out"
+                className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-950"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-md bg-zinc-950 px-2.5 py-1 text-xs font-medium text-white hover:bg-zinc-800"
+            >
+              Sign In
+            </Link>
+          )}
         </div>
       </div>
     </header>
   );
 }
-
