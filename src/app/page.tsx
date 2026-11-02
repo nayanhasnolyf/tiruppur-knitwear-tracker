@@ -9,6 +9,7 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Download,
   Filter,
   Languages,
   Loader2,
@@ -208,6 +209,74 @@ export default function MerchandiserOrderBoardPage() {
     setSearchQuery('');
   };
 
+  const handleExportWeeklyCsv = () => {
+    const headers = [
+      'PO Number',
+      'Buyer',
+      'Country',
+      'Style Name',
+      'Colour',
+      'Production Unit',
+      'Total Qty (pcs)',
+      'Active Stage',
+      'Stage Completed (pcs)',
+      'Stage Completion %',
+      'Required Daily Rate (pcs/d)',
+      'Actual 3d Avg Rate (pcs/d)',
+      'Daily Variance (pcs/d)',
+      'Ex-Factory Date',
+      'Status',
+      'Confirmed Buyer Note',
+    ];
+
+    const escapeCell = (val: string | number | null | undefined) => {
+      const s = String(val ?? '');
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    };
+
+    const rows = filteredOrders.map((o) => [
+      o.poNumber,
+      o.buyer.name,
+      o.buyer.country,
+      o.styleName,
+      o.colour,
+      o.productionUnit,
+      o.totalQty,
+      o.currentStage,
+      o.runRate.completedQty,
+      `${o.runRate.completionPercentage}%`,
+      o.runRate.requiredDailyRate,
+      o.runRate.actualDailyRate,
+      o.runRate.dailyShortfallOrSurplus,
+      new Date(o.exFactoryDate).toISOString().slice(0, 10),
+      o.runRate.status,
+      o.latestFloorUpdate?.isMerchandiserConfirmed
+        ? o.latestFloorUpdate.merchandiserBuyerNote ||
+          o.latestFloorUpdate.aiEnglishTranslation ||
+          ''
+        : 'On track / Pending confirmation',
+    ]);
+
+    const csvContent =
+      '\uFEFF' +
+      [headers, ...rows]
+        .map((r) => r.map(escapeCell).join(','))
+        .join('\r\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'Tiruppur_Weekly_Buyer_Status_2026-11-02.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // KPI aggregations across all orders
   const kpis = useMemo(() => {
     const totalOrders = orders.length;
@@ -249,7 +318,16 @@ export default function MerchandiserOrderBoardPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={handleExportWeeklyCsv}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-xs font-medium text-slate-700 shadow-2xs transition hover:border-slate-900 hover:text-slate-900"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Export Weekly Buyer Status (CSV)
+          </button>
+
           {userRole === 'MERCHANDISER' ? (
             <button
               type="button"
