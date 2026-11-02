@@ -96,3 +96,4 @@ export async function requireRole(allowedRoles: Role[]): Promise<
 
   return { authorized: true, user };
 }
+
