@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MERCHANDISER
+  SUPERVISOR
+}
+
+enum ProductionStage {
+  CUTTING
+  PRINTING
+  STITCHING
+  WASHING
+  FINISHING
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum ReasonCategory {
+  MACHINE_BREAKDOWN
+  FABRIC_DEFECT
+  POWER_CUT
+  WORKER_SHORTAGE
+  PRINT_WASH_DELAY
+  QUALITY_REWORK
+  OTHER
+  UNCLASSIFIED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role
+  assignedUnit  String?
+  preferredLang String   @default("en") // "en" or "ta"
+
+  dailyUpdates     DailyUpdate[]
+  dateChangeAudits DateChangeAudit[]
+}
+
+model Buyer {
+  id           String  @id @default(uuid())
+  name         String // e.g., "Company B (UK)"
+  country      String
+  contactEmail String
+  accessToken  String  @unique // Used for isolated read-only buyer portal `/buyer/[token]`
+
+  orders Order[]
+}
+
+model Order {
+  id             String          @id @default(uuid())
+  poNumber       String          @unique // e.g., "B-PO-88213"
+  buyerId        String
+  buyer          Buyer           @relation(fields: [buyerId], references: [id])
+  styleName      String
+  colour         String
+  sizeBreakdown  Json // e.g., {"S": 2000, "M": 4000, "L": 4000, "XL": 2000}
+  totalQty       Int
+  productionUnit String // "Unit 1", "Unit 2", "Subcontract - Printing"
+  exFactoryDate  DateTime
+  currentStage   ProductionStage
+  createdAt      DateTime        @default(now())
+
+  milestones       TnaMilestone[]
+  dailyUpdates     DailyUpdate[]
+  dateChangeAudits DateChangeAudit[]
+}
+
+model TnaMilestone {
+  id               String          @id @default(uuid())
+  orderId          String
+  order            Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  stageName        ProductionStage
+  sequenceOrder    Int
+  plannedStartDate DateTime
+  plannedEndDate   DateTime
+  targetQty        Int
+  completedQty     Int             @default(0)
+  status           MilestoneStatus @default(PENDING)
+
+  dailyUpdates     DailyUpdate[]
+  dateChangeAudits DateChangeAudit[]
+}
+
+model DailyUpdate {
+  id                      String          @id @default(uuid())
+  clientSubmissionId      String          @unique // Idempotency key for offline mobile queue sync
+  orderId                 String
+  order                   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  milestoneId             String
+  milestone               TnaMilestone    @relation(fields: [milestoneId], references: [id], onDelete: Cascade)
+  supervisorId            String
+  supervisor              User            @relation(fields: [supervisorId], references: [id])
+  workDate                DateTime
+  qtyDoneToday            Int
+  photoUrl                String?
+  rawNoteTamil            String?
+  aiEnglishTranslation    String?
+  aiReasonCategory        ReasonCategory?
+  aiConfidence            Float?
+  finalReasonCategory     ReasonCategory?
+  wasAiOverridden         Boolean         @default(false)
+  isMerchandiserConfirmed Boolean         @default(false) // Gatekeeper before showing warning to Buyer
+  merchandiserBuyerNote   String?
+  createdAt               DateTime        @default(now())
+}
+
+model DateChangeAudit {
+  id              String        @id @default(uuid())
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  milestoneId     String?
+  milestone       TnaMilestone? @relation(fields: [milestoneId], references: [id], onDelete: SetNull)
+  fieldChanged    String
+  oldDate         DateTime
+  newDate         DateTime
+  changedByUserId String
+  changedByUser   User          @relation(fields: [changedByUserId], references: [id])
+  changeReason    String
+  changedAt       DateTime      @default(now())
+}
+
