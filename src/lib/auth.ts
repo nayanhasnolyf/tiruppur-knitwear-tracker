@@ -3,7 +3,7 @@ import { Role } from '@prisma/client';
 import prisma from './prisma';
 
 export const SESSION_COOKIE_NAME = 'tk_session_email';
-export const DEFAULT_DEMO_EMAIL = 'merchandiser@tiruppurknit.com';
+export const SESSION_ROLE_COOKIE_NAME = 'tk_session_role';
 
 export interface SessionUser {
   id: string;
@@ -16,8 +16,8 @@ export interface SessionUser {
 
 /**
  * Retrieves the currently authenticated user from the HTTP-only session cookie
- * (or optional `x-demo-user-email` header). Defaults to the seeded Merchandiser
- * account on first visit unless explicitly logged out (`LOGGED_OUT`).
+ * (or optional `x-demo-user-email` header for automated API tests).
+ * Strictly returns `null` when no valid session cookie is present.
  */
 export async function getSessionUser(): Promise<SessionUser | null> {
   try {
@@ -27,13 +27,15 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     const cookieStore = cookies();
     const cookieValue = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
-    if (cookieValue === 'LOGGED_OUT' && !headerEmail) {
+    const rawEmail = headerEmail || cookieValue;
+    if (!rawEmail || rawEmail === 'LOGGED_OUT') {
       return null;
     }
 
-    const targetEmail = (headerEmail || cookieValue || DEFAULT_DEMO_EMAIL)
-      .trim()
-      .toLowerCase();
+    const targetEmail = rawEmail.trim().toLowerCase();
+    if (!targetEmail) {
+      return null;
+    }
 
     const user = await prisma.user.findUnique({
       where: { email: targetEmail },
@@ -47,24 +49,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       },
     });
 
-    if (user) {
-      return user;
-    }
-
-    // Fallback to first merchandiser if cookie email is stale
-    const fallbackUser = await prisma.user.findFirst({
-      where: { role: Role.MERCHANDISER },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        assignedUnit: true,
-        preferredLang: true,
-      },
-    });
-
-    return fallbackUser;
+    return user ?? null;
   } catch {
     return null;
   }
@@ -82,7 +67,7 @@ export async function requireRole(allowedRoles: Role[]): Promise<
     return {
       authorized: false,
       status: 401,
-      error: 'Authentication required. Please sign in.',
+      error: 'Authentication required. Please sign in at /login.',
     };
   }
 
@@ -96,4 +81,3 @@ export async function requireRole(allowedRoles: Role[]): Promise<
 
   return { authorized: true, user };
 }
-

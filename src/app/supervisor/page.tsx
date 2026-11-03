@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 import {
   Camera,
   ChevronDown,
@@ -135,6 +134,7 @@ export default function SupervisorMobilePage() {
   const [orders, setOrders] = useState<OrderOption[]>([]);
   const [selectedOrderId, setSelectedOrderId] = useState<string>('');
   const [loadingOrders, setLoadingOrders] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // 3-Part Minimal Form State
   const [qtyDoneToday, setQtyDoneToday] = useState<string>('240');
@@ -199,24 +199,59 @@ export default function SupervisorMobilePage() {
     }
   };
 
+  // Stable fetchOrders with zero state dependencies so it never loops!
   const fetchOrders = useCallback(async () => {
     setLoadingOrders(true);
+    setLoadError(null);
     try {
-      const res = await fetch('/api/orders', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        const list: OrderOption[] = data.orders || [];
-        setOrders(list);
-        if (list.length > 0 && !selectedOrderId) {
-          setSelectedOrderId(list[0].id);
+      const [ordersRes, meRes] = await Promise.all([
+        fetch('/api/orders', { cache: 'no-store' }),
+        fetch('/api/auth/me', { cache: 'no-store' }),
+      ]);
+
+      if (!ordersRes.ok) {
+        throw new Error('Unable to load active floor orders.');
+      }
+
+      const ordersData = await ordersRes.json();
+      const rawList: OrderOption[] = Array.isArray(ordersData)
+        ? ordersData
+        : Array.isArray(ordersData.orders)
+        ? ordersData.orders
+        : [];
+
+      let assignedUnit: string | null = null;
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        assignedUnit = meData?.user?.assignedUnit ?? null;
+        if (meData?.user?.preferredLang === 'en' || meData?.user?.preferredLang === 'ta') {
+          setLang(meData.user.preferredLang);
         }
       }
-    } catch {
-      // Offline resilient
+
+      // Sort supervisor's assigned unit orders to the top of the list
+      const sortedList = [...rawList].sort((a, b) => {
+        if (!assignedUnit) return 0;
+        const aMatch = a.productionUnit === assignedUnit ? -1 : 0;
+        const bMatch = b.productionUnit === assignedUnit ? -1 : 0;
+        return aMatch - bMatch;
+      });
+
+      setOrders(sortedList);
+      setSelectedOrderId((prev) => {
+        if (prev && sortedList.some((o) => o.id === prev)) {
+          return prev;
+        }
+        return sortedList[0]?.id || '';
+      });
+    } catch (err: unknown) {
+      setLoadError(
+        err instanceof Error ? err.message : 'Failed to load orders.'
+      );
     } finally {
       setLoadingOrders(false);
     }
-  }, [selectedOrderId]);
+  }, []);
 
   useEffect(() => {
     fetchOrders();
@@ -536,13 +571,36 @@ export default function SupervisorMobilePage() {
         <form onSubmit={handleSubmitUpdate} className="space-y-6 p-6">
           {/* Order Selector */}
           <div>
-            <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-              {lang === 'ta' ? 'ஆர்டர் (Order & Stage)' : 'Order & Stage'}
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
+                {lang === 'ta' ? 'ஆர்டர் (Order & Stage)' : 'Order & Stage'}
+              </label>
+              {selectedOrder && (
+                <span className="font-mono text-[11px] text-zinc-500">
+                  {selectedOrder.productionUnit}
+                </span>
+              )}
+            </div>
+
             {loadingOrders ? (
-              <div className="mt-2 flex items-center gap-2 text-xs text-zinc-400">
+              <div className="mt-1.5 flex h-11 items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 text-xs text-zinc-500">
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Loading...
+                <span>
+                  {lang === 'ta'
+                    ? 'ஆர்டர்கள் ஏற்றப்படுகின்றன...'
+                    : 'Loading active orders...'}
+                </span>
+              </div>
+            ) : loadError ? (
+              <div className="mt-1.5 flex items-center justify-between rounded-lg border border-[#FECDD3] bg-[#FFF1F2] px-3 py-2 text-xs text-[#BE123C]">
+                <span>{loadError}</span>
+                <button
+                  type="button"
+                  onClick={fetchOrders}
+                  className="font-mono underline"
+                >
+                  Retry
+                </button>
               </div>
             ) : (
               <select
@@ -768,18 +826,31 @@ export default function SupervisorMobilePage() {
           </button>
         </form>
 
-        {/* Minimal Footer Link */}
+        {/* Minimal Recent Floor Logs Footer */}
         {selectedOrder && (
-          <div className="flex items-center justify-between border-t border-zinc-200 bg-zinc-50/60 px-6 py-3 text-xs text-zinc-500">
-            <span className="font-mono">
-              {selectedOrder.dailyUpdates.length} logs recorded
-            </span>
-            <Link
-              href={`/orders/${selectedOrder.id}`}
-              className="font-medium text-zinc-950 hover:underline"
-            >
-              Inspect Order →
-            </Link>
+          <div className="border-t border-zinc-200 bg-zinc-50/60 px-6 py-4">
+            <div className="flex items-center justify-between font-mono text-[11px] text-zinc-500">
+              <span>
+                {lang === 'ta'
+                  ? `${selectedOrder.poNumber} சமீபத்திய பதிவுகள்`
+                  : `Recent Logs · ${selectedOrder.poNumber}`}
+              </span>
+              <span>{selectedOrder.dailyUpdates.length} total</span>
+            </div>
+
+            <div className="mt-2 space-y-1.5">
+              {selectedOrder.dailyUpdates.slice(0, 3).map((u) => (
+                <div
+                  key={u.id}
+                  className="flex items-center justify-between font-mono text-xs text-zinc-700 tabular-nums"
+                >
+                  <span>+{u.qtyDoneToday.toLocaleString()} pcs</span>
+                  <span className="text-[11px] text-zinc-400">
+                    {new Date(u.workDate).toISOString().slice(0, 10)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

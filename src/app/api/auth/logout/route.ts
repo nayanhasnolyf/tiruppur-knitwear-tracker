@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { SESSION_COOKIE_NAME } from '@/lib/auth';
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_ROLE_COOKIE_NAME,
+} from '@/lib/auth';
 
 export async function POST() {
   const response = NextResponse.json({
@@ -7,13 +10,19 @@ export async function POST() {
     message: 'Signed out successfully.',
   });
 
-  response.cookies.set(SESSION_COOKIE_NAME, 'LOGGED_OUT', {
+  response.cookies.set(SESSION_COOKIE_NAME, '', {
     httpOnly: true,
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 60 * 24 * 7,
+    maxAge: 0,
+  });
+
+  response.cookies.set(SESSION_ROLE_COOKIE_NAME, '', {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
   });
 
   return response;
 }
-

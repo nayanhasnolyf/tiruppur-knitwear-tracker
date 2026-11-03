@@ -90,6 +90,17 @@ export default function LoginPage() {
   return (
     <div className="mx-auto max-w-3xl py-8">
       <div className="mb-8">
+        <div className="mb-4 flex items-center gap-2">
+          <span className="flex h-6 w-6 items-center justify-center rounded bg-zinc-950 font-mono text-xs font-bold text-white">
+            T
+          </span>
+          <span className="text-sm font-semibold tracking-tight text-zinc-950">
+            TiruppurKnit
+          </span>
+          <span className="font-mono text-[11px] text-zinc-400">
+            / Export TNA &amp; Floor Tracker
+          </span>
+        </div>
         <h1 className="text-2xl font-semibold tracking-tight text-zinc-950">
           Sign in to TiruppurKnit
         </h1>

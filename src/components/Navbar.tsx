@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, RefreshCw } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 interface SessionUser {
   id: string;
@@ -18,71 +18,73 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [user, setUser] = useState<SessionUser | null>(null);
-  const [switchingTo, setSwitchingTo] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
 
-  const fetchSession = async () => {
-    try {
-      const res = await fetch('/api/auth/me', { cache: 'no-store' });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user ?? null);
-      }
-    } catch {
-      // Ignore network errors during initial load
-    }
-  };
+  const isBuyerRoute = pathname.startsWith('/buyer/');
+  const isLoginRoute = pathname === '/login';
 
   useEffect(() => {
-    fetchSession();
-  }, [pathname]);
+    if (isBuyerRoute || isLoginRoute) {
+      return;
+    }
 
-  const handleQuickSwitch = async (
-    email: string,
-    targetPath: string,
-    label: string
-  ) => {
-    try {
-      setSwitchingTo(label);
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, quickSwitch: true }),
-      });
-      if (res.ok) {
+    let cancelled = false;
+    const fetchSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { cache: 'no-store' });
+        if (!res.ok) return;
         const data = await res.json();
-        setUser(data.user);
-        window.dispatchEvent(new Event('tk-auth-changed'));
-        if (pathname === targetPath) {
-          router.refresh();
-        } else {
-          router.push(targetPath);
+        if (!cancelled) {
+          setUser(data.user ?? null);
         }
+      } catch {
+        // Ignore network errors during initial load
       }
+    };
+
+    fetchSession();
+    const onAuthChanged = () => fetchSession();
+    window.addEventListener('tk-auth-changed', onAuthChanged);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('tk-auth-changed', onAuthChanged);
+    };
+  }, [pathname, isBuyerRoute, isLoginRoute]);
+
+  // Do NOT render the internal employee Navbar on external Buyer Portal links or on /login
+  if (isBuyerRoute || isLoginRoute) {
+    return null;
+  }
+
+  const handleLogout = async () => {
+    setSigningOut(true);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      window.dispatchEvent(new Event('tk-auth-changed'));
+      router.push('/login');
+      router.refresh();
     } finally {
-      setSwitchingTo(null);
+      setSigningOut(false);
     }
   };
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setUser(null);
-    window.dispatchEvent(new Event('tk-auth-changed'));
-    router.push('/login');
-  };
+  const isMerchandiser = user?.role === 'MERCHANDISER';
+  const isSupervisor = user?.role === 'SUPERVISOR';
 
-  const isMerchandiserView =
-    pathname === '/' || pathname.startsWith('/orders/');
-  const isSupervisorView = pathname.startsWith('/supervisor');
-  const isBuyerUK = pathname.includes('uk-company-b-readonly-2026');
-  const isBuyerDE = pathname.includes('de-company-c-readonly-2026');
+  const roleBadgeLabel = user
+    ? user.role === 'SUPERVISOR'
+      ? `${user.name} · ${user.assignedUnit ? `${user.assignedUnit} ` : ''}Supervisor`
+      : `${user.name} · Merchandiser`
+    : '';
 
   return (
     <header className="sticky top-0 z-40 h-14 border-b border-zinc-200 bg-white/90 backdrop-blur print:hidden">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        {/* Left: Minimal Monochrome Brand + Primary Links */}
+        {/* Left: Role-Isolated Brand + Allowed Navigation */}
         <div className="flex items-center gap-6">
           <Link
-            href="/"
+            href={isSupervisor ? '/supervisor' : '/'}
             className="flex items-center gap-2 text-zinc-950 transition hover:opacity-80"
           >
             <span className="flex h-6 w-6 items-center justify-center rounded bg-zinc-950 font-mono text-xs font-bold text-white">
@@ -91,132 +93,50 @@ export default function Navbar() {
             <span className="text-sm font-semibold tracking-tight">
               TiruppurKnit
             </span>
-            <span className="hidden font-mono text-[11px] text-zinc-400 sm:inline">
-              / Export TNA
+            <span className="font-mono text-[11px] text-zinc-400">
+              {isSupervisor ? '/ Floor' : '/ Export TNA'}
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            <Link
-              href="/"
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                isMerchandiserView
-                  ? 'bg-zinc-100 text-zinc-950'
-                  : 'text-zinc-500 hover:text-zinc-950'
-              }`}
-            >
-              Orders
-            </Link>
-            <Link
-              href="/supervisor"
-              className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
-                isSupervisorView
-                  ? 'bg-zinc-100 text-zinc-950'
-                  : 'text-zinc-500 hover:text-zinc-950'
-              }`}
-            >
-              Floor Entry
-            </Link>
+          <nav className="flex items-center gap-1">
+            {isMerchandiser && (
+              <Link
+                href="/"
+                className={`rounded-md px-2.5 py-1 text-xs font-medium transition ${
+                  pathname === '/' || pathname.startsWith('/orders/')
+                    ? 'bg-zinc-100 text-zinc-950'
+                    : 'text-zinc-500 hover:text-zinc-950'
+                }`}
+              >
+                Orders
+              </Link>
+            )}
+
+            {isSupervisor && (
+              <span className="rounded-md bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-950">
+                Floor Entry
+              </span>
+            )}
           </nav>
         </div>
 
-        {/* Right: Compact Segmented Role/Portal Switcher + Active User */}
+        {/* Right: Logged-in Identity Badge + Sign Out Button */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-100/80 p-0.5 text-xs">
-            <button
-              type="button"
-              disabled={switchingTo !== null}
-              onClick={() =>
-                handleQuickSwitch(
-                  'merchandiser@tiruppurknit.com',
-                  '/',
-                  'merchandiser'
-                )
-              }
-              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition ${
-                isMerchandiserView && user?.role === 'MERCHANDISER'
-                  ? 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-600 hover:text-zinc-950'
-              }`}
-            >
-              {switchingTo === 'merchandiser' && (
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              )}
-              Merchandiser
-            </button>
-
-            <button
-              type="button"
-              disabled={switchingTo !== null}
-              onClick={() =>
-                handleQuickSwitch(
-                  'supervisor1@tiruppurknit.com',
-                  '/supervisor',
-                  'supervisor'
-                )
-              }
-              className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 font-medium transition ${
-                isSupervisorView
-                  ? 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-600 hover:text-zinc-950'
-              }`}
-            >
-              {switchingTo === 'supervisor' && (
-                <RefreshCw className="h-3 w-3 animate-spin" />
-              )}
-              Supervisor
-            </button>
-
-            <Link
-              href="/buyer/uk-company-b-readonly-2026"
-              className={`rounded-md px-2.5 py-1 font-medium transition ${
-                isBuyerUK
-                  ? 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-600 hover:text-zinc-950'
-              }`}
-            >
-              Buyer: UK
-            </Link>
-
-            <Link
-              href="/buyer/de-company-c-readonly-2026"
-              className={`hidden rounded-md px-2.5 py-1 font-medium transition sm:inline-block ${
-                isBuyerDE
-                  ? 'bg-white text-zinc-950 shadow-2xs'
-                  : 'text-zinc-600 hover:text-zinc-950'
-              }`}
-            >
-              Buyer: DE
-            </Link>
-          </div>
-
-          <div className="hidden h-4 w-px bg-zinc-200 lg:block" />
-
-          {user ? (
-            <div className="hidden items-center gap-2 lg:flex">
-              <Link
-                href="/login"
-                className="font-mono text-xs text-zinc-600 hover:text-zinc-950"
-              >
-                {user.name}
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                title="Sign out"
-                className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-950"
-              >
-                <LogOut className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          ) : (
-            <Link
-              href="/login"
-              className="rounded-md bg-zinc-950 px-2.5 py-1 text-xs font-medium text-white hover:bg-zinc-800"
-            >
-              Sign In
-            </Link>
+          {user && (
+            <span className="rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs text-zinc-700">
+              {roleBadgeLabel}
+            </span>
           )}
+
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={handleLogout}
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:border-zinc-950 hover:bg-zinc-950 hover:text-white disabled:opacity-50"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span>Sign Out</span>
+          </button>
         </div>
       </div>
     </header>

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { SESSION_COOKIE_NAME } from '@/lib/auth';
+import {
+  SESSION_COOKIE_NAME,
+  SESSION_ROLE_COOKIE_NAME,
+} from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
   try {
@@ -29,14 +32,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!isQuickSwitch && password !== user.passwordHash && password !== 'demo123') {
+    if (
+      !isQuickSwitch &&
+      password !== user.passwordHash &&
+      password !== 'demo123'
+    ) {
       return NextResponse.json(
         { error: 'Invalid password. (Use demo123 for reviewer accounts)' },
         { status: 401 }
       );
     }
 
-    // Optional preferredLang update on login/switch
     let updatedLang = user.preferredLang;
     if (body.preferredLang === 'en' || body.preferredLang === 'ta') {
       const updated = await prisma.user.update({
@@ -60,12 +66,15 @@ export async function POST(req: NextRequest) {
       message: `Signed in as ${user.name} (${user.role})`,
     });
 
-    response.cookies.set(SESSION_COOKIE_NAME, user.email, {
+    const cookieOptions = {
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'lax' as const,
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
-    });
+    };
+
+    response.cookies.set(SESSION_COOKIE_NAME, user.email, cookieOptions);
+    response.cookies.set(SESSION_ROLE_COOKIE_NAME, user.role, cookieOptions);
 
     return response;
   } catch (error) {
@@ -76,4 +85,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-
