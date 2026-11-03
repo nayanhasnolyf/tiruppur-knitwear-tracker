@@ -1,7 +1,7 @@
 # Deployment & Reviewer Guide — TiruppurKnit Ops (Company A)
 
 ## 1. Project Links
-- **GitHub Repository URL**: `[INSERT_YOUR_PUBLIC_GITHUB_URL_HERE]`
+- **GitHub Repository URL**: `https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker`
 - **Live Deployed App URL**: `[INSERT_YOUR_VERCEL_LIVE_URL_HERE]`
 
 ---

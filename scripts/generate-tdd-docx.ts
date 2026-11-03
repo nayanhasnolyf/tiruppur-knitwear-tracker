@@ -136,7 +136,7 @@ async function generateDocx() {
               new TableRow({
                 children: [
                   cell('GitHub Repository URL', true),
-                  cell('https://github.com/nayanpokhriyal/tiruppur-knitwear-tracker'),
+                  cell('https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker'),
                 ],
               }),
               new TableRow({

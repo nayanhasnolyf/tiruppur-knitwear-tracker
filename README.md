@@ -1,6 +1,6 @@
 # TiruppurKnit Ops — Export Production & TNA Delay Projection System
 
-- **GitHub Repository URL**: `[INSERT_YOUR_PUBLIC_GITHUB_URL_HERE]`
+- **GitHub Repository URL**: `https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker`
 - **Live Deployed App URL**: `[INSERT_YOUR_VERCEL_LIVE_URL_HERE]`
 - **Submission Documents**:
   - [`deployment.md`](./deployment.md) — Local setup, environment variable names, deployment architecture, and demo credentials.

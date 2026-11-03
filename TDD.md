@@ -1,7 +1,7 @@
 # Technical Design Document (TDD)
 ## Production Order-Tracking, 2-Week Early Delay Projection & Tamil Floor AI System
 
-- **GitHub Repository URL**: `[INSERT_YOUR_PUBLIC_GITHUB_URL_HERE]`
+- **GitHub Repository URL**: `https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker`
 - **Live Deployed Application URL**: `[INSERT_YOUR_VERCEL_LIVE_URL_HERE]`
 - **Client**: Company A, Tiruppur, Tamil Nadu (Knitwear Exporter to UK & EU Buyers — 3 Own Units + Subcontracted Printing & Washing, ₹95–110 Cr Annual Revenue)
 - **Document Version**: 1.0 (Production Release — Anchored to `2026-11-02`)
