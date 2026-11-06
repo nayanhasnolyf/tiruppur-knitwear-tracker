@@ -18,8 +18,8 @@
 2. **Bilingual (`தமிழ் / EN`) Offline-Capable Supervisor Mobile App (`/supervisor`)**:
    - Designed for 2–3 GB RAM Android phones on the factory floor: big numeric quantity input, camera/preset bundle photo attachment, Tamil voice/text blocker notes (`webkitSpeechRecognition` `ta-IN`), and a `localStorage` offline queue with idempotent `clientSubmissionId` sync.
 3. **Tamil-to-English AI Reason Classifier & Human-in-the-Loop Gate (`/orders/[id]`)**:
-   - Translates Tamil floor blocker notes into English and classifies them into 8 root-cause categories (`MACHINE_BREAKDOWN`, `QUALITY_REWORK`, `FABRIC_DEFECT`, `POWER_CUT`, `WORKER_SHORTAGE`, `PRINT_WASH_DELAY`, `OTHER`, `UNCLASSIFIED`) using Gemini 2.5 Flash + a deterministic Tamil garment-floor lexicon fallback.
-   - Displays Original Tamil side-by-side with AI English translation, flags `<70%` low-confidence/vague notes for manual review, lets Merchandisers override the AI category, and **withholds warnings from buyers until explicitly confirmed by a Merchandiser**.
+   - Translates Tamil floor blocker notes into English and classifies them into 8 root-cause categories (`MACHINE_BREAKDOWN`, `QUALITY_REWORK`, `FABRIC_DEFECT`, `POWER_CUT`, `WORKER_SHORTAGE`, `PRINT_WASH_DELAY`, `OTHER`, `UNCLASSIFIED`) using live Google Gemini 2.5 Flash (`gemini-2.5-flash`).
+   - Displays Original Tamil side-by-side with AI English translation, flags `<70%` low-confidence/vague notes or missing/unreachable API errors for manual review, lets Merchandisers override the AI category, and **withholds warnings from buyers until explicitly confirmed by a Merchandiser**.
 4. **Compliance Date-Change Audit Trail**:
    - Every change to a TNA milestone date or Ex-Factory date requires a mandatory compliance justification and records `oldDate`, `newDate`, `changedByUser`, and `changeReason`.
 5. **Isolated Read-Only Buyer Portals (`/buyer/[token]`) & 1-Click Weekly CSV/PDF Export**:
@@ -38,7 +38,7 @@ npx prisma generate
 npx prisma db push
 npx prisma db seed
 
-# 3. Run the 19 automated unit tests (Vitest)
+# 3. Run the 18 automated unit tests (Vitest)
 npm test
 
 # 4. Start the local dev server on http://localhost:3000

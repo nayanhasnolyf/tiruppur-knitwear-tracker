@@ -32,7 +32,7 @@ This populates the 3 client sample orders (`B-PO-88213`, `B-PO-88240`, `C-PO-048
 
 ### Step 4: Run Automated Tests & Start the Development Server
 ```bash
-# Run the 19 Vitest unit tests (Run-Rate Engine, Tamil AI Classifier, Security & Isolation)
+# Run the 18 Vitest unit tests (Run-Rate Engine, Tamil AI Classifier, Security & Isolation)
 npm test
 
 # Start the Next.js development server on http://localhost:3000
@@ -44,24 +44,22 @@ npm run dev
 ## 3. Deployment Architecture & Environment Variables (Names Only)
 
 ### Cloud Hosting Architecture
-- **Application Tier**: Hosted on **Vercel** (Next.js 14 App Router Serverless Functions + Static/Edge Assets).
+- **Application Tier**: Hosted on **Vercel** (Next.js 14 App Router Serverless Functions + Edge Route-Isolation Middleware).
 - **Database Tier**: Hosted on **Neon Serverless PostgreSQL** via Prisma ORM (`@prisma/client`).
-- **AI Translation & Classification Tier**: Google Gemini API (`gemini-2.5-flash`) with an automatic deterministic Tamil garment-floor lexicon fallback so the system remains 100% functional even offline or without an API key.
+- **AI Translation & Classification Tier**: Live Google Gemini API (`gemini-2.5-flash` via `GEMINI_API_KEY`). If `GEMINI_API_KEY` is missing or the API fails/times out, the system never blocks floor count saving; instead, it explicitly reports the error in `aiEnglishTranslation`, marks the note `UNCLASSIFIED` (`needsManualReview = true`), and alerts the Merchandiser to read the original Tamil note and classify it manually.
 
 ### Required Environment Variable Names (Never Commit Secret Values)
 | Variable Name | Required? | Purpose |
 | :--- | :--- | :--- |
 | `DATABASE_URL` | **Required** | PostgreSQL connection string (Neon / Supabase / local PostgreSQL) used by Prisma ORM. |
-| `GEMINI_API_KEY` | Optional | Google Gemini API key for live `gemini-2.5-flash` Tamil-to-English floor note translation and root-cause classification. Automatically falls back to the deterministic Tamil garment-floor lexicon analyzer if omitted or unreachable. |
+| `GEMINI_API_KEY` | **Required for AI** | Google Gemini API key for live `gemini-2.5-flash` Tamil-to-English floor note translation and root-cause classification. If missing or unreachable, the UI surfaces an explicit AI error banner and routes the Tamil note to mandatory Merchandiser manual review. |
 | `SESSION_SECRET` | Optional | Secret key used for HTTP-only session cookie management (defaults safely in local/demo environments). |
 
 ---
 
 ## 4. Demo Login Credentials & 1-Click Reviewer Walkthrough
 
-For zero-friction evaluation, the top navigation bar includes a **1-Click Demo Switcher** that lets reviewers switch instantaneously between Merchandiser, Floor Supervisor Mobile, and both Isolated Buyer Portals without typing credentials.
-
-You can also sign in manually at **`/login`** using password **`demo123`** for any account:
+Unauthenticated visitors to `/`, `/orders/*`, or `/supervisor` are automatically redirected by `src/middleware.ts` to **`/login`**. For zero-friction evaluation, **`/login`** includes **1-Click Reviewer Persona Buttons** (Merchandiser, Supervisor Unit 1, Supervisor Unit 2, and direct links to both Isolated Buyer Portals) in addition to standard email/password sign-in (`demo123`):
 
 ### Internal Staff Accounts (Password for all: `demo123`)
 | Role | Name | Email | Password | Assigned Unit | Primary View |

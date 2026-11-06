@@ -157,7 +157,7 @@ async function generateDocx() {
                 children: [
                   cell('Stack', true),
                   cell(
-                    'Next.js 14 (App Router), TypeScript, Tailwind CSS, Prisma ORM, Neon Serverless PostgreSQL, Gemini 2.5 Flash + Deterministic Tamil Lexicon'
+                    'Next.js 14 (App Router), TypeScript, Tailwind CSS, Prisma ORM, Neon Serverless PostgreSQL, Google Gemini 2.5 Flash (Structured JSON)'
                   ),
                 ],
               }),
@@ -285,7 +285,7 @@ async function generateDocx() {
 
           heading2('4.2 Tamil-to-English AI Classifier & When It Is Wrong (src/lib/tamil-ai.ts)'),
           bodyPara(
-            'Supervisors enter or speak Tamil notes on /supervisor. The backend calls Gemini 2.5 Flash (with automatic fallback to a deterministic Tamil garment-floor lexicon analyzer). Because AI can misclassify factory slang or vague notes, four safeguards are enforced: (1) Original Tamil text is always shown side-by-side with the English translation; (2) Notes with <70% confidence or vague wording are flagged as UNCLASSIFIED / Needs Manual Review; (3) Merchandisers can override the category in 1 click (setting wasAiOverridden = true); and (4) No warning is visible to buyers until isMerchandiserConfirmed is toggled true.'
+            'Supervisors enter or speak Tamil notes on /supervisor. The backend calls Google Gemini 2.5 Flash (gemini-2.5-flash) with a strict JSON schema. Because AI can misclassify factory slang, return low confidence, or fail if GEMINI_API_KEY is missing/unreachable, four safeguards are enforced: (1) Original Tamil text is always shown side-by-side with the English translation; (2) Notes with <70% confidence or API errors explicitly report why AI failed and flag UNCLASSIFIED / Needs Manual Review; (3) Merchandisers can override the category in 1 click (setting wasAiOverridden = true); and (4) No warning is visible to buyers until isMerchandiserConfirmed is toggled true.'
           ),
 
           // Section 5

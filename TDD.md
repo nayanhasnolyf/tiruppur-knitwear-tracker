@@ -56,22 +56,22 @@ To ensure deterministic evaluation and zero ambiguity across the sample dataset,
 │              APPLICATION & DOMAIN ENGINE TIER (Next.js API Routes)          │
 │                                                                             │
 │  • Run-Rate Projection Engine (src/lib/run-rate.ts) — Pure, deterministic   │
-│  • Tamil AI Classifier + Fallback Lexicon (src/lib/tamil-ai.ts)             │
-│  • Role Auth & Tenant Gatekeeper (src/lib/auth.ts, buyer-portal-utils.ts)   │
+│  • Tamil AI Classifier + Error Guardrails (src/lib/tamil-ai.ts)             │
+│  • Edge RBAC Middleware & Tenant Gatekeeper (middleware.ts, auth.ts)        │
 └──────────────────────────────┬──────────────────────────┬───────────────────┘
                                │                          │
                                ▼                          ▼
               ┌────────────────────────────────┐  ┌───────────────────────────┐
               │ Neon Serverless PostgreSQL     │  │ Google Gemini 2.5 Flash   │
-              │ • Prisma ORM (6 Relational     │  │ • Tamil -> English JSON   │
-              │   Models + Atomic Transactions)│  │ • Auto Fallback Lexicon   │
+              │ • Prisma ORM (6 Relational     │  │ • Structured JSON Schema  │
+              │   Models + Atomic Transactions)│  │ • Explicit Error Fallback │
               └────────────────────────────────┘  └───────────────────────────┘
 ```
 
 ### Why This Architecture Fits Tiruppur Factory Constraints
 1. **Single Monolithic Next.js 14 Deployment**: Eliminates separate frontend/backend CORS handshakes, reducing round-trip latency on high-jitter factory mobile networks.
 2. **Ultra-Light Mobile Bundle (`~103 kB` First Load JS)**: By using Tailwind CSS, Lucide SVG icons, and native browser APIs (`localStorage`, `webkitSpeechRecognition`) instead of heavy state-management or UI libraries, `/supervisor` runs smoothly on 2 GB RAM Android phones.
-3. **Hybrid AI + Deterministic Tamil Lexicon**: Live `gemini-2.5-flash` handles nuanced Tamil sentences, while `classifyTamilFloorNoteFallback()` guarantees sub-millisecond offline/fallback classification for Tiruppur garment terminology (`ஊசி` needle, `தையல்` stitching, `கறை` stain, `மின்சாரம்` power cut, `துணி` fabric defect, `பிரிண்டிங்` printing).
+3. **Resilient Live AI + Honest Error Reporting**: Live `gemini-2.5-flash` translates and classifies Tamil floor blocker notes into structured JSON. If `GEMINI_API_KEY` is missing or the Gemini API is unreachable, the floor quantity and Tamil note are still saved atomically while an explicit error (`[AI Error: ...]`) and `needsManualReview = true` alert the Merchandiser to inspect the original Tamil note and classify it manually.
 
 ---
 

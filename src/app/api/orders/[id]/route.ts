@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Role } from '@prisma/client';
 import prisma from '@/lib/prisma';
+import { requireRole } from '@/lib/auth';
 import { enrichOrderWithRunRate } from '@/lib/order-serializer';
 
 export const dynamic = 'force-dynamic';
@@ -9,6 +11,14 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const authCheck = await requireRole([Role.MERCHANDISER, Role.SUPERVISOR]);
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.status }
+      );
+    }
+
     const order = await prisma.order.findUnique({
       where: { id: params.id },
       include: {

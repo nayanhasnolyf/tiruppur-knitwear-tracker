@@ -15,6 +15,14 @@ const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
 export async function GET(req: NextRequest) {
   try {
+    const authCheck = await requireRole([Role.MERCHANDISER, Role.SUPERVISOR]);
+    if (!authCheck.authorized) {
+      return NextResponse.json(
+        { error: authCheck.error },
+        { status: authCheck.status }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const buyerId = searchParams.get('buyerId') || '';
     const unit = searchParams.get('unit') || '';
