@@ -1,80 +1,151 @@
-import { describe, it, expect } from 'vitest';
-import {
-  classifyTamilFloorNote,
-  classifyTamilFloorNoteFallback,
-} from '../tamil-ai';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { classifyTamilFloorNote } from '../tamil-ai';
 
-describe('Tamil-to-English AI Reason Classifier & Fallback Guardrails (tamil-ai)', () => {
-  it('1. Accurately translates and classifies Tamil machine breakdown note (MACHINE_BREAKDOWN)', async () => {
-    const note =
-      'ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் 4 மணி நேரம் நின்றன';
-    const result = await classifyTamilFloorNote(note);
+describe('Tamil-to-English Gemini AI Classifier & Honest Error Reporting (tamil-ai)', () => {
+  const originalEnv = process.env.GEMINI_API_KEY;
+  const originalFetch = global.fetch;
 
-    expect(result.reasonCategory).toBe('MACHINE_BREAKDOWN');
-    expect(result.englishTranslation).toContain('Needle plate broke');
-    expect(result.confidence).toBeGreaterThanOrEqual(0.9);
-    expect(result.needsManualReview).toBe(false);
+  beforeEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('2. Accurately translates and classifies Tamil collar oil stain rework note (QUALITY_REWORK)', async () => {
-    const note =
-      'காலர் பகுதியில் எண்ணெய் கறை உள்ளது, மறுபடியும் வாஷிங் செய்ய வேண்டும்';
-    const result = await classifyTamilFloorNote(note);
-
-    expect(result.reasonCategory).toBe('QUALITY_REWORK');
-    expect(result.englishTranslation).toContain('Oil stain found on collar area');
-    expect(result.confidence).toBeGreaterThanOrEqual(0.9);
-    expect(result.needsManualReview).toBe(false);
+  afterEach(() => {
+    if (originalEnv === undefined) {
+      delete process.env.GEMINI_API_KEY;
+    } else {
+      process.env.GEMINI_API_KEY = originalEnv;
+    }
+    global.fetch = originalFetch;
   });
 
-  it('3. Detects EB power cut (POWER_CUT) and fabric defect (FABRIC_DEFECT) notes in Tamil', async () => {
-    const powerResult = await classifyTamilFloorNote(
-      'இன்று காலை 3 மணி நேரம் மின்சாரம் இல்லை, ஜெனரேட்டர் பழுது'
-    );
-    expect(powerResult.reasonCategory).toBe('POWER_CUT');
-    expect(powerResult.confidence).toBeGreaterThanOrEqual(0.85);
-    expect(powerResult.needsManualReview).toBe(false);
-
-    const fabricResult = await classifyTamilFloorNote(
-      'துணியில் சாயம் வேறுபாடு மற்றும் சிறிய ஓட்டை உள்ளது'
-    );
-    expect(fabricResult.reasonCategory).toBe('FABRIC_DEFECT');
-    expect(fabricResult.confidence).toBeGreaterThanOrEqual(0.85);
-    expect(fabricResult.needsManualReview).toBe(false);
-  });
-
-  it('4. Flags vague/ambiguous Tamil floor notes ("இன்று வேலை சற்று தாமதம்") as UNCLASSIFIED with confidence < 0.70 and needsManualReview = true', async () => {
-    const vagueNote = 'இன்று வேலை சற்று தாமதம், மெதுவாக நடக்கிறது';
-    const result = await classifyTamilFloorNote(vagueNote);
-
-    expect(result.reasonCategory).toBe('UNCLASSIFIED');
-    expect(result.confidence).toBeLessThan(0.7);
-    expect(result.needsManualReview).toBe(true);
-    expect(result.englishTranslation).toContain('requires merchandiser review');
-  });
-
-  it('5. Handles empty or whitespace-only Tamil input cleanly without throwing', async () => {
-    const emptyResult = classifyTamilFloorNoteFallback('   ');
+  it('1. Handles empty or whitespace-only Tamil input cleanly without calling Gemini', async () => {
+    const emptyResult = await classifyTamilFloorNote('   ');
 
     expect(emptyResult.rawNoteTamil).toBe('');
     expect(emptyResult.englishTranslation).toBe('');
     expect(emptyResult.reasonCategory).toBe('UNCLASSIFIED');
     expect(emptyResult.confidence).toBe(0);
     expect(emptyResult.needsManualReview).toBe(false);
+    expect(emptyResult.source).toBe('EMPTY_INPUT');
   });
 
-  it('6. Detects worker shortage (WORKER_SHORTAGE) and printing/rain delay (PRINT_WASH_DELAY)', async () => {
-    const workerResult = await classifyTamilFloorNote(
-      'மழை காரணமாக 6 டெய்லர் ஆட்கள் இன்று விடுமுறை'
-    );
-    expect(workerResult.reasonCategory).toBe('WORKER_SHORTAGE');
-    expect(workerResult.needsManualReview).toBe(false);
+  it('2. Reports explicit AI error when GEMINI_API_KEY is missing in .env (no fake dictionary fallback)', async () => {
+    delete process.env.GEMINI_API_KEY;
 
-    const printResult = await classifyTamilFloorNote(
-      'பிரிண்டிங் கியூரிங் தாமதம், மழை காரணமாக காயவில்லை'
+    const note =
+      'ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் 4 மணி நேரம் நின்றன';
+    const result = await classifyTamilFloorNote(note);
+
+    expect(result.reasonCategory).toBe('UNCLASSIFIED');
+    expect(result.confidence).toBe(0);
+    expect(result.needsManualReview).toBe(true);
+    expect(result.englishTranslation).toBe(
+      '[AI Error: GEMINI_API_KEY is not configured in .env]'
     );
-    expect(printResult.reasonCategory).toBe('PRINT_WASH_DELAY');
-    expect(printResult.needsManualReview).toBe(false);
+    expect(result.errorReason).toBe(
+      'GEMINI_API_KEY is missing in environment variables.'
+    );
+    expect(result.source).toBe('AI_ERROR');
+  });
+
+  it('3. Parses high-confidence Gemini 2.5 Flash JSON response (>= 0.70) and sets needsManualReview = false', async () => {
+    process.env.GEMINI_API_KEY = 'test-live-gemini-key';
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    englishTranslation:
+                      'Needle plate broke, 2 sewing machines stopped for 4 hours',
+                    reasonCategory: 'MACHINE_BREAKDOWN',
+                    confidence: 0.94,
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as unknown as Response);
+
+    const note =
+      'ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் 4 மணி நேரம் நின்றன';
+    const result = await classifyTamilFloorNote(note);
+
+    expect(result.source).toBe('GEMINI_LIVE');
+    expect(result.reasonCategory).toBe('MACHINE_BREAKDOWN');
+    expect(result.englishTranslation).toBe(
+      'Needle plate broke, 2 sewing machines stopped for 4 hours'
+    );
+    expect(result.confidence).toBe(0.94);
+    expect(result.needsManualReview).toBe(false);
+  });
+
+  it('4. Enforces low-confidence (< 0.70) guardrail on ambiguous Tamil floor notes from Gemini', async () => {
+    process.env.GEMINI_API_KEY = 'test-live-gemini-key';
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    englishTranslation:
+                      'Work is progressing slightly slowly today',
+                    reasonCategory: 'UNCLASSIFIED',
+                    confidence: 0.42,
+                  }),
+                },
+              ],
+            },
+          },
+        ],
+      }),
+    } as unknown as Response);
+
+    const vagueNote = 'இன்று வேலை சற்று மெதுவாக நடக்கிறது';
+    const result = await classifyTamilFloorNote(vagueNote);
+
+    expect(result.source).toBe('GEMINI_LIVE');
+    expect(result.reasonCategory).toBe('UNCLASSIFIED');
+    expect(result.confidence).toBe(0.42);
+    expect(result.needsManualReview).toBe(true);
+  });
+
+  it('5. Catches Gemini API HTTP / network errors and surfaces the exact failure reason with needsManualReview = true', async () => {
+    process.env.GEMINI_API_KEY = 'invalid-gemini-key';
+
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 400,
+      json: async () => ({
+        error: {
+          message: 'API key not valid. Please pass a valid API key.',
+        },
+      }),
+    } as unknown as Response);
+
+    const result = await classifyTamilFloorNote(
+      'காலர் பகுதியில் எண்ணெய் கறை உள்ளது'
+    );
+
+    expect(result.source).toBe('AI_ERROR');
+    expect(result.reasonCategory).toBe('UNCLASSIFIED');
+    expect(result.confidence).toBe(0);
+    expect(result.needsManualReview).toBe(true);
+    expect(result.errorReason).toContain(
+      'API key not valid. Please pass a valid API key.'
+    );
+    expect(result.englishTranslation).toContain('[AI Translation Unavailable:');
   });
 });
-

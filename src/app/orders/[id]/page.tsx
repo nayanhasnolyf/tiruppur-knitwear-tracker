@@ -762,9 +762,36 @@ export default function OrderDetailPage() {
                             {u.wasAiOverridden ? ' · Overridden' : ''}
                           </span>
                         </div>
-                        <p className="mt-1.5 text-sm text-zinc-950">
-                          “{u.aiEnglishTranslation}”
-                        </p>
+                        {u.needsManualReview &&
+                        (u.aiEnglishTranslation?.startsWith('[AI Error') ||
+                          u.aiEnglishTranslation?.startsWith(
+                            '[AI Translation Unavailable'
+                          ) ||
+                          u.aiConfidence === 0) ? (
+                          <div className="mt-2 rounded-md border border-[#FECDD3] bg-[#FFF1F2] p-3 text-xs text-[#BE123C]">
+                            <div className="font-semibold">
+                              AI translation failed: GEMINI_API_KEY missing or
+                              unreachable — Merchandiser must read original
+                              Tamil note and select category manually.
+                            </div>
+                            <div className="mt-1 font-mono text-[11px]">
+                              {u.aiEnglishTranslation}
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <p className="mt-1.5 text-sm text-zinc-950">
+                              “{u.aiEnglishTranslation}”
+                            </p>
+                            {u.needsManualReview && (
+                              <div className="mt-2 rounded border border-[#FDE68A] bg-[#FFFBEB] px-2.5 py-1.5 font-mono text-[11px] text-[#B45309]">
+                                Low AI confidence ({confidencePct ?? 0}%) —
+                                Merchandiser manual verification required before
+                                buyer release.
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
 

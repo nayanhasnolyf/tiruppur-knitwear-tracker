@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
     let aiConfidence: number | null = null;
     let finalReasonCategory: ReasonCategory | null = null;
     let needsManualReview = false;
+    let aiErrorReason: string | null = null;
 
     if (rawNoteTamil) {
       const aiResult = await classifyTamilFloorNote(rawNoteTamil);
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
       aiConfidence = aiResult.confidence;
       finalReasonCategory = aiResult.reasonCategory as ReasonCategory;
       needsManualReview = aiResult.needsManualReview;
+      aiErrorReason = aiResult.errorReason ?? null;
     }
 
     const workDateMs = toUtcMidnightMs(workDateStr);
@@ -158,6 +160,7 @@ export async function POST(req: NextRequest) {
         update: {
           ...result.createdUpdate,
           needsManualReview,
+          aiErrorReason,
         },
         milestone: result.updatedMilestone,
         alreadySynced: false,

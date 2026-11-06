@@ -559,11 +559,28 @@ export default function SupervisorMobilePage() {
             }`}
           >
             <div className="font-semibold">{feedbackBanner.title}</div>
-            {feedbackBanner.aiTranslation && (
-              <div className="mt-1.5 font-mono text-[11px] text-zinc-800">
-                AI ({feedbackBanner.aiCategory}): “{feedbackBanner.aiTranslation}”
-              </div>
-            )}
+            {feedbackBanner.aiTranslation &&
+              (feedbackBanner.aiTranslation.startsWith('[AI Error') ||
+              feedbackBanner.aiTranslation.startsWith(
+                '[AI Translation Unavailable'
+              ) ||
+              feedbackBanner.aiConfidence === 0 ? (
+                <div className="mt-2 rounded border border-[#FECDD3] bg-[#FFF1F2] p-2.5 text-[#BE123C]">
+                  <div className="font-semibold">
+                    AI translation failed: GEMINI_API_KEY missing or unreachable
+                    — Merchandiser must read original Tamil note and select
+                    category manually.
+                  </div>
+                  <div className="mt-1 font-mono text-[11px]">
+                    {feedbackBanner.aiTranslation}
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-1.5 font-mono text-[11px] text-zinc-800">
+                  AI ({feedbackBanner.aiCategory}): “
+                  {feedbackBanner.aiTranslation}”
+                </div>
+              ))}
           </div>
         )}
 

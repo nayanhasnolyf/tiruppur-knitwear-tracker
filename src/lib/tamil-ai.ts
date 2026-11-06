@@ -1,5 +1,3 @@
-import { ReasonCategory } from '@prisma/client';
-
 export type ReasonCategoryType =
   | 'MACHINE_BREAKDOWN'
   | 'FABRIC_DEFECT'
@@ -16,7 +14,8 @@ export interface TamilAiClassificationResult {
   reasonCategory: ReasonCategoryType;
   confidence: number;
   needsManualReview: boolean;
-  source: 'GEMINI_LIVE' | 'DETERMINISTIC_FALLBACK';
+  errorReason?: string;
+  source: 'GEMINI_LIVE' | 'AI_ERROR' | 'EMPTY_INPUT';
 }
 
 const VALID_REASON_CATEGORIES = new Set<ReasonCategoryType>([
@@ -49,7 +48,10 @@ export const REASON_CATEGORY_LABELS: Record<ReasonCategoryType, string> = {
 function applyConfidenceGuardrail(
   result: Omit<TamilAiClassificationResult, 'needsManualReview'>
 ): TamilAiClassificationResult {
-  const clampedConfidence = Math.max(0, Math.min(1, Number(result.confidence) || 0));
+  const clampedConfidence = Math.max(
+    0,
+    Math.min(1, Number(result.confidence) || 0)
+  );
   const needsManualReview =
     clampedConfidence < 0.7 ||
     result.reasonCategory === 'UNCLASSIFIED' ||
@@ -63,166 +65,13 @@ function applyConfidenceGuardrail(
 }
 
 /**
- * Deterministic Tamil & Tanglish garment-floor lexicon analyzer.
- * Used when offline, when GEMINI_API_KEY is not configured, when Gemini fails/times out,
- * or during deterministic unit tests.
- */
-export function classifyTamilFloorNoteFallback(
-  rawNoteTamil: string
-): TamilAiClassificationResult {
-  const trimmed = (rawNoteTamil ?? '').trim();
-
-  if (!trimmed) {
-    return {
-      rawNoteTamil: '',
-      englishTranslation: '',
-      reasonCategory: 'UNCLASSIFIED',
-      confidence: 0,
-      needsManualReview: false,
-      source: 'DETERMINISTIC_FALLBACK',
-    };
-  }
-
-  const normalized = trimmed.toLowerCase();
-
-  // Exact match for seeded sample notes for 100% fidelity
-  if (trimmed.includes('ஊசி தட்டு உடைந்துவிட்டது')) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Needle plate broke, 2 sewing machines stopped for 4 hours',
-      reasonCategory: 'MACHINE_BREAKDOWN',
-      confidence: 0.94,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  if (trimmed.includes('காலர் பகுதியில் எண்ணெய் கறை')) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Oil stain found on collar area, requires re-washing before packing',
-      reasonCategory: 'QUALITY_REWORK',
-      confidence: 0.91,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 1. Machine Breakdown (ஊசி, இயந்திரம், மிஷின், தையல், மோட்டார், ओवरலாக், needle, machine, motor)
-  if (
-    /ஊசி|இயந்திர|மிஷின்|தையல்|மோட்டார்|ஓவர்லாக்|needle|machine|motor|overlock|flatlock/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Sewing machine / needle breakdown on floor causing line stoppage',
-      reasonCategory: 'MACHINE_BREAKDOWN',
-      confidence: 0.93,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 2. Quality Rework (கறை, எண்ணெய், வாஷிங், காலர், ரீவொர்க், அளவு, stain, oil, rework, collar)
-  if (
-    /கறை|எண்ணெய்|வாஷிங்|காலர்|ரீவொர்க்|தையல் பிரி|stain|rework|collar|oil|rewash/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Garment stain / quality defect detected during inspection; sent for rework/re-washing',
-      reasonCategory: 'QUALITY_REWORK',
-      confidence: 0.91,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 3. Fabric Defect (துணி, நூல், சாயம், ஓட்டை, சுருக்கம், ஜிஎஸ்எம், fabric, yarn, gsm, hole, shade)
-  if (
-    /துணி|நூல்|சாயம்|ஓட்டை|சுருக்கம்|ஜிஎஸ்எம்|fabric|yarn|gsm|hole|shade|dyeing/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Fabric / yarn defect (GSM variation, pinhole, or shade mismatch) holding up cutting/stitching',
-      reasonCategory: 'FABRIC_DEFECT',
-      confidence: 0.89,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 4. Power Cut (மின்சாரம், கரண்ட், பவர், ஜெனரேட்டர், இபி, power, current, voltage, outage)
-  if (
-    /மின்சாரம்|கரண்ட்|பவர்|ஜெனரேட்டர்|இபி|power|current|voltage|outage|eb cut/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Unscheduled EB power cut / generator switchover delay interrupted floor production',
-      reasonCategory: 'POWER_CUT',
-      confidence: 0.94,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 5. Worker Shortage (ஆட்கள், டெய்லர், விடுமுறை, வரவில்லை, தொழிலாளர், worker, absent, tailor, leave)
-  if (
-    /ஆட்கள்|டெய்லர்|விடுமுறை|வரவில்லை|தொழிலாளர்|பற்றாக்குறை|worker|absent|tailor|leave|operator/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Tailor / operator absenteeism reduced active sewing line capacity today',
-      reasonCategory: 'WORKER_SHORTAGE',
-      confidence: 0.88,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 6. Print / Wash Delay (பிரிண்டிங், மழை, காயவில்லை, கியூரிங், அச்சு, printing, curing, rain, drying)
-  if (
-    /பிரிண்டிங்|மழை|காயவில்லை|கியூரிங்|அச்சு|printing|curing|rain|drying|screen/i.test(
-      normalized
-    )
-  ) {
-    return applyConfidenceGuardrail({
-      rawNoteTamil: trimmed,
-      englishTranslation:
-        'Printing / curing delay due to high humidity or screen setup bottleneck',
-      reasonCategory: 'PRINT_WASH_DELAY',
-      confidence: 0.87,
-      source: 'DETERMINISTIC_FALLBACK',
-    });
-  }
-
-  // 7. Vague / ambiguous / unknown Tamil notes -> Low confidence UNCLASSIFIED requiring manual review
-  return applyConfidenceGuardrail({
-    rawNoteTamil: trimmed,
-    englishTranslation:
-      'Uncertain floor note — requires merchandiser review of original Tamil text',
-    reasonCategory: 'UNCLASSIFIED',
-    confidence: 0.45,
-    source: 'DETERMINISTIC_FALLBACK',
-  });
-}
-
-/**
- * Translates a Tamil floor note into English and classifies its root-cause category.
- * Uses Gemini 2.5 Flash when GEMINI_API_KEY is available, with automatic fallback to
- * the deterministic Tamil garment-floor lexicon analyzer if offline or on error.
+ * Translates a Tamil floor note into English and classifies its root-cause category
+ * using ONLY the live Google Gemini API (`gemini-2.5-flash`).
+ * If `GEMINI_API_KEY` is missing or the API call fails, returns an explicit error
+ * reason and flags `needsManualReview = true` rather than guessing with a dictionary.
  */
 export async function classifyTamilFloorNote(
-  rawNoteTamil: string,
-  options?: { forceFallback?: boolean }
+  rawNoteTamil: string
 ): Promise<TamilAiClassificationResult> {
   const trimmed = (rawNoteTamil ?? '').trim();
 
@@ -233,13 +82,21 @@ export async function classifyTamilFloorNote(
       reasonCategory: 'UNCLASSIFIED',
       confidence: 0,
       needsManualReview: false,
-      source: 'DETERMINISTIC_FALLBACK',
+      source: 'EMPTY_INPUT',
     };
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || options?.forceFallback || process.env.NODE_ENV === 'test') {
-    return classifyTamilFloorNoteFallback(trimmed);
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) {
+    return {
+      rawNoteTamil: trimmed,
+      englishTranslation: '[AI Error: GEMINI_API_KEY is not configured in .env]',
+      reasonCategory: 'UNCLASSIFIED',
+      confidence: 0,
+      needsManualReview: true,
+      errorReason: 'GEMINI_API_KEY is missing in environment variables.',
+      source: 'AI_ERROR',
+    };
   }
 
   try {
@@ -266,7 +123,7 @@ Respond ONLY with valid JSON matching this schema:
 Supervisor Note: "${trimmed.replace(/"/g, '\\"')}"`;
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(
@@ -289,7 +146,16 @@ Supervisor Note: "${trimmed.replace(/"/g, '\\"')}"`;
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      return classifyTamilFloorNoteFallback(trimmed);
+      let apiErrorDetail = `HTTP ${response.status}`;
+      try {
+        const errBody = await response.json();
+        if (errBody?.error?.message) {
+          apiErrorDetail = errBody.error.message;
+        }
+      } catch {
+        // Ignore non-JSON error body
+      }
+      throw new Error(`Gemini API request failed (${apiErrorDetail})`);
     }
 
     const data = await response.json();
@@ -297,7 +163,7 @@ Supervisor Note: "${trimmed.replace(/"/g, '\\"')}"`;
       data?.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!textOutput) {
-      return classifyTamilFloorNoteFallback(trimmed);
+      throw new Error('Gemini API returned an empty candidate response.');
     }
 
     const parsed = JSON.parse(textOutput);
@@ -308,25 +174,39 @@ Supervisor Note: "${trimmed.replace(/"/g, '\\"')}"`;
       : 'UNCLASSIFIED';
 
     const confidence =
-      typeof parsed.confidence === 'number' && Number.isFinite(parsed.confidence)
+      typeof parsed.confidence === 'number' &&
+      Number.isFinite(parsed.confidence)
         ? parsed.confidence
-        : 0.5;
+        : 0;
 
-    const englishTranslation =
-      typeof parsed.englishTranslation === 'string' &&
-      parsed.englishTranslation.trim().length > 0
-        ? parsed.englishTranslation.trim()
-        : 'Uncertain floor note — requires merchandiser review of original Tamil text';
+    if (
+      typeof parsed.englishTranslation !== 'string' ||
+      parsed.englishTranslation.trim().length === 0
+    ) {
+      throw new Error('Gemini API JSON response missing englishTranslation.');
+    }
 
     return applyConfidenceGuardrail({
       rawNoteTamil: trimmed,
-      englishTranslation,
-      reasonCategory: category as ReasonCategory,
+      englishTranslation: parsed.englishTranslation.trim(),
+      reasonCategory: category,
       confidence,
       source: 'GEMINI_LIVE',
     });
-  } catch {
-    return classifyTamilFloorNoteFallback(trimmed);
+  } catch (err: unknown) {
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : 'Unknown Gemini translation failure.';
+
+    return {
+      rawNoteTamil: trimmed,
+      englishTranslation: `[AI Translation Unavailable: ${errorMessage}]`,
+      reasonCategory: 'UNCLASSIFIED',
+      confidence: 0,
+      needsManualReview: true,
+      errorReason: errorMessage,
+      source: 'AI_ERROR',
+    };
   }
 }
-
