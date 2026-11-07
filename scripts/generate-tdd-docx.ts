@@ -142,7 +142,7 @@ async function generateDocx() {
               new TableRow({
                 children: [
                   cell('Live Deployed Application URL', true),
-                  cell('[INSERT_YOUR_VERCEL_LIVE_URL_HERE]'),
+                  cell('https://tiruppur-knitwear-tracker.vercel.app'),
                 ],
               }),
               new TableRow({

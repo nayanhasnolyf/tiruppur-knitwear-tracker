@@ -2,7 +2,7 @@
 
 ## 1. Project Links
 - **GitHub Repository URL**: `https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker`
-- **Live Deployed App URL**: `[INSERT_YOUR_VERCEL_LIVE_URL_HERE]`
+- **Live Deployed App URL**: `https://tiruppur-knitwear-tracker.vercel.app`
 
 ---
 
@@ -14,8 +14,8 @@
 
 ### Step 1: Clone the Repository & Install Dependencies
 ```bash
-git clone <YOUR_GITHUB_REPO_URL>
-cd "Tiruppur Knitware"
+git clone https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker.git
+cd "tiruppur-knitwear-tracker"
 npm install
 ```
 

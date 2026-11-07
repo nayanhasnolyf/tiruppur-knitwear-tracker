@@ -1,7 +1,7 @@
 # TiruppurKnit Ops — Export Production & TNA Delay Projection System
 
 - **GitHub Repository URL**: `https://github.com/nayanhasnolyf/tiruppur-knitwear-tracker`
-- **Live Deployed App URL**: `[INSERT_YOUR_VERCEL_LIVE_URL_HERE]`
+- **Live Deployed App URL**: `https://tiruppur-knitwear-tracker.vercel.app`
 - **Submission Documents**:
   - [`deployment.md`](./deployment.md) — Local setup, environment variable names, deployment architecture, and demo credentials.
   - [`TDD.md`](./TDD.md) & [`Technical_Design_Document.docx`](./Technical_Design_Document.docx) — Full Technical Design Document covering the ₹1.08 Cr business case, labeled assumptions, system architecture, run-rate math, and Tamil AI error-handling guardrails.
