@@ -10,7 +10,7 @@ description: >
   carbon-black primary CTAs (#09090B), geometric sans-serif headings (Inter), and
   tabular monospace numerals (JetBrains Mono) for garment quantities, dates, and
   run-rate math. 95% of the interface is strictly monochrome; color is reserved
-  exclusively for the three schedule status signals (RED, AMBER, GREEN).
+  exclusively for the three schedule status signals (RED, YELLOW, GREEN).
 
 colors:
   canvas: "#FAFAFA"
@@ -27,10 +27,10 @@ colors:
   status-red-bg: "#FFF1F2"
   status-red-fg: "#BE123C"
   status-red-border: "#FECDD3"
-  status-amber-dot: "#D97706"
-  status-amber-bg: "#FFFBEB"
-  status-amber-fg: "#B45309"
-  status-amber-border: "#FDE68A"
+  status-yellow-dot: "#D97706"
+  status-yellow-bg: "#FFFBEB"
+  status-yellow-fg: "#B45309"
+  status-yellow-border: "#FDE68A"
   status-green-dot: "#10B981"
   status-green-bg: "#ECFDF5"
   status-green-fg: "#047857"
@@ -84,14 +84,14 @@ typography:
 - **Ban Decorative Colored Badges**: Buyer names (`Company B (UK)`), Production Units (`Unit 1`), Stages (`STITCHING`), and Ship Weeks must **never** use colored pills. Render them as clean monochrome text or neutral `#F4F4F5` tags.
 - **Color is Reserved Exclusively for Schedule Status Signals**:
   1. **`RED` (Critical Delay)**: Dot `#E11D48`, badge `#FFF1F2`, text `#BE123C`, border `#FECDD3`.
-  2. **`AMBER` (2-Week Early Warning)**: Dot `#D97706`, badge `#FFFBEB`, text `#B45309`, border `#FDE68A`.
+  2. **`YELLOW` (2-Week Early Warning)**: Dot `#D97706`, badge `#FFFBEB`, text `#B45309`, border `#FDE68A`.
   3. **`GREEN` (On Track)**: Dot `#10B981`, badge `#ECFDF5`, text `#047857`, border `#A7F3D0`.
 
 ## 3. Screen-Level Layout Rules
-1. **Top Navigation (`56px` / `h-14`)**: Single hairline bar (`bg-white/90 backdrop-blur border-b border-zinc-200`). Brand + primary links on the left; compact segmented role/portal switcher on the right.
+1. **Top Navigation (`56px` / `h-14`)**: Single hairline bar (`bg-white/90 backdrop-blur border-b border-zinc-200`). Brand + primary links on the left; compact user identity and sign-out on the right.
 2. **Merchandiser Order Board (`/`)**:
    - **4-Column Metric Strip**: Single `border-zinc-200` horizontal strip with `divide-x divide-zinc-200`, `11px` uppercase muted labels, and `28px` `font-mono` numerals.
-   - **Single-Row Filter Bar**: Search, segmented status filter (`All`, `Red`, `Amber`, `Green`), slim Buyer/Unit selects, `Export CSV`, and solid black `+ New Order` CTA.
+   - **Single-Row Filter Bar**: Search, segmented status filter (`All`, `RED`, `YELLOW`, `GREEN`), slim Buyer/Unit selects, `Export CSV`, and solid black `+ New Order` CTA.
    - **4-Column Streamlined Order Rows**: Identity | Stage & Thin Progress Bar | Run-Rate Math (`Need` vs `Actual` & variance) | Status Pill & Action Arrow.
 3. **Supervisor Mobile Floor Terminal (`/supervisor`)**:
    - Strictly *"only numbers, a photo and a send button"*:

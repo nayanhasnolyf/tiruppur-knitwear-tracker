@@ -20,16 +20,16 @@ yarn-debug.log*
 yarn-error.log*
 
 # local env files
-.env*.local
 .env
+.env*.local
+!.env.example
 
 # vercel
 .vercel
 
+# submission zip archive
+submission.zip
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-
-.vercel
-.env*

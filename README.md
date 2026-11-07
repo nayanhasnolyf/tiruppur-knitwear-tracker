@@ -14,7 +14,7 @@
 
 ### Key Capabilities
 1. **Deterministic Run-Rate Delay Projection Engine (“Shows Its Maths”)**:
-   - Compares required daily output ($\text{Remaining Qty} \div \text{Days Left to Stage End}$) against the rolling 3-day actual floor average to flag `AMBER` (2-Week Early Warning) and `RED` (Critical Ex-Factory Delay) orders **10–18 days before ship date**.
+   - Compares required daily output ($\text{Remaining Qty} \div \text{Days Left to Stage End}$) against the rolling 3-day actual floor average to flag `YELLOW` (2-Week Early Warning) and `RED` (Critical Ex-Factory Delay) orders **10–18 days before ship date**.
 2. **Bilingual (`தமிழ் / EN`) Offline-Capable Supervisor Mobile App (`/supervisor`)**:
    - Designed for 2–3 GB RAM Android phones on the factory floor: big numeric quantity input, camera/preset bundle photo attachment, Tamil voice/text blocker notes (`webkitSpeechRecognition` `ta-IN`), and a `localStorage` offline queue with idempotent `clientSubmissionId` sync.
 3. **Tamil-to-English AI Reason Classifier & Human-in-the-Loop Gate (`/orders/[id]`)**:

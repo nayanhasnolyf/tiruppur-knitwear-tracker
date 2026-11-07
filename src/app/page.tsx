@@ -59,7 +59,7 @@ interface RunRateData {
   projectedSlipDays: number | null;
   projectedExFactorySlipDays: number | null;
   isStalled: boolean;
-  status: 'GREEN' | 'AMBER' | 'RED';
+  status: 'GREEN' | 'YELLOW' | 'RED';
   isTwoWeekEarlyWarning: boolean;
   mathSummary: string;
   warningHeadline: string;
@@ -279,8 +279,8 @@ export default function MerchandiserOrderBoardPage() {
     const totalOrders = orders.length;
     const totalPieces = orders.reduce((acc, o) => acc + o.totalQty, 0);
     const redCount = orders.filter((o) => o.runRate.status === 'RED').length;
-    const amberCount = orders.filter(
-      (o) => o.runRate.status === 'AMBER'
+    const yellowCount = orders.filter(
+      (o) => o.runRate.status === 'YELLOW'
     ).length;
     const earlyWarningOrders = orders.filter(
       (o) => o.runRate.isTwoWeekEarlyWarning
@@ -294,8 +294,8 @@ export default function MerchandiserOrderBoardPage() {
       totalOrders,
       totalPieces,
       redCount,
-      amberCount,
-      atRiskCount: redCount + amberCount,
+      yellowCount,
+      atRiskCount: redCount + yellowCount,
       earlyWarningCount: earlyWarningOrders.length,
       pendingAiCount,
     };
@@ -371,7 +371,7 @@ export default function MerchandiserOrderBoardPage() {
               {kpis.atRiskCount}
             </span>
             <span className="font-mono text-xs text-zinc-500 tabular-nums">
-              {kpis.redCount} red · {kpis.amberCount} amber
+              {kpis.redCount} red · {kpis.yellowCount} yellow
             </span>
           </div>
         </div>
@@ -421,7 +421,7 @@ export default function MerchandiserOrderBoardPage() {
 
           {/* Segmented Status Control */}
           <div className="flex h-9 items-center rounded-md border border-zinc-200 bg-white p-0.5">
-            {(['ALL', 'RED', 'AMBER', 'GREEN'] as const).map((st) => (
+            {(['ALL', 'RED', 'YELLOW', 'GREEN'] as const).map((st) => (
               <button
                 key={st}
                 type="button"
@@ -534,22 +534,22 @@ export default function MerchandiserOrderBoardPage() {
               const statusPillStyle =
                 runRate.status === 'RED'
                   ? 'border-[#FECDD3] bg-[#FFF1F2] text-[#BE123C]'
-                  : runRate.status === 'AMBER'
+                  : runRate.status === 'YELLOW'
                   ? 'border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]'
                   : 'border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]';
 
               const statusDotStyle =
                 runRate.status === 'RED'
                   ? 'bg-[#E11D48]'
-                  : runRate.status === 'AMBER'
+                  : runRate.status === 'YELLOW'
                   ? 'bg-[#D97706]'
                   : 'bg-[#10B981]';
 
               const statusLabel =
                 runRate.status === 'RED'
                   ? `RED · ${runRate.projectedExFactorySlipDays ?? runRate.projectedSlipDays ?? 0}d Late`
-                  : runRate.status === 'AMBER'
-                  ? 'AMBER · 2-Wk Warning'
+                  : runRate.status === 'YELLOW'
+                  ? 'YELLOW · 2-Wk Warning'
                   : 'GREEN · On Track';
 
               return (

@@ -1,4 +1,4 @@
-export type RunRateStatus = 'GREEN' | 'AMBER' | 'RED';
+export type RunRateStatus = 'GREEN' | 'YELLOW' | 'RED';
 
 export interface RunRateInput {
   totalQty: number;
@@ -138,7 +138,7 @@ export function calculateOrderRunRate(input: RunRateInput): RunRateResult {
       Math.max(0, daysLeftToExFactory);
   }
 
-  // 8. Status Classification ('GREEN' | 'AMBER' | 'RED') & Early Warning Flag
+  // 8. Status Classification ('GREEN' | 'YELLOW' | 'RED') & Early Warning Flag
   let status: RunRateStatus = 'GREEN';
 
   if (remainingQty === 0) {
@@ -156,13 +156,13 @@ export function calculateOrderRunRate(input: RunRateInput): RunRateResult {
     actualDailyRate < requiredDailyRate ||
     (projectedSlipDays !== null && projectedSlipDays > 0)
   ) {
-    status = 'AMBER';
+    status = 'YELLOW';
   } else {
     status = 'GREEN';
   }
 
   const isTwoWeekEarlyWarning =
-    (status === 'AMBER' || status === 'RED') && daysLeftToExFactory >= 10;
+    (status === 'YELLOW' || status === 'RED') && daysLeftToExFactory >= 10;
 
   // 9. Human-Readable Formula Summary (mathSummary & warningHeadline)
   const fmtRemaining = remainingQty.toLocaleString('en-US');
@@ -202,7 +202,7 @@ export function calculateOrderRunRate(input: RunRateInput): RunRateResult {
     } else {
       warningHeadline = `Critical delay: Projected ${projectedSlipDays ?? 0} days behind stage plan`;
     }
-  } else if (status === 'AMBER') {
+  } else if (status === 'YELLOW') {
     if (isTwoWeekEarlyWarning) {
       warningHeadline = `Projected ${projectedSlipDays} days behind stage plan (${daysLeftToExFactory} days to Ex-Factory — Early Warning)`;
     } else {

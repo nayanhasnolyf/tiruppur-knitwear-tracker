@@ -99,7 +99,7 @@ interface RunRateData {
   projectedSlipDays: number | null;
   projectedExFactorySlipDays: number | null;
   isStalled: boolean;
-  status: 'GREEN' | 'AMBER' | 'RED';
+  status: 'GREEN' | 'YELLOW' | 'RED';
   isTwoWeekEarlyWarning: boolean;
   mathSummary: string;
   warningHeadline: string;
@@ -369,14 +369,14 @@ export default function OrderDetailPage() {
   const statusPillStyle =
     runRate.status === 'RED'
       ? 'border-[#FECDD3] bg-[#FFF1F2] text-[#BE123C]'
-      : runRate.status === 'AMBER'
+      : runRate.status === 'YELLOW'
       ? 'border-[#FDE68A] bg-[#FFFBEB] text-[#B45309]'
       : 'border-[#A7F3D0] bg-[#ECFDF5] text-[#047857]';
 
   const statusDotStyle =
     runRate.status === 'RED'
       ? 'bg-[#E11D48]'
-      : runRate.status === 'AMBER'
+      : runRate.status === 'YELLOW'
       ? 'bg-[#D97706]'
       : 'bg-[#10B981]';
 

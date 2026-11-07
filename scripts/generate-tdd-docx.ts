@@ -190,7 +190,7 @@ async function generateDocx() {
           heading1('2. Explicitly Labeled Engineering Assumptions'),
           bulletItem(
             '[ASSUMPTION-01] Reference "Today" Date Anchored to 2026-11-02',
-            'All run-rate projections default to 2026-11-02T00:00:00Z so the 3 client sample orders (Ex-Factory: 2026-11-12, 2026-11-20, 2026-11-28) deterministically exhibit a 10-day RED critical delay (B-PO-88240), an 18-day AMBER 2-week early warning (B-PO-88213), and a 26-day GREEN order (C-PO-0488).'
+            'All run-rate projections default to 2026-11-02T00:00:00Z so the 3 client sample orders (Ex-Factory: 2026-11-12, 2026-11-20, 2026-11-28) deterministically exhibit a 10-day RED critical delay (B-PO-88240), an 18-day YELLOW 2-week early warning (B-PO-88213), and a 26-day GREEN order (C-PO-0488).'
           ),
           bulletItem(
             '[ASSUMPTION-02] Backward TNA Scheduling Templates',
@@ -261,7 +261,7 @@ async function generateDocx() {
                   cell('B-PO-88213 (Company B - UK)'),
                   cell('STITCHING · 5,200 left / 14d'),
                   cell('Need 372 pcs/d · Making 240 pcs/d'),
-                  cell('AMBER · 2-Week Early Warning (+8d stage slip, 18d to ship)'),
+                  cell('YELLOW · 2-Week Early Warning (+8d stage slip, 18d to ship)'),
                 ],
               }),
               new TableRow({
@@ -292,7 +292,7 @@ async function generateDocx() {
           heading1('5. UI Design System (DESIGN.md) & Scope Cuts'),
           bulletItem(
             '95% Monochrome Hairline System (DESIGN.md)',
-            'Adapted from Cal.com and Vercel DESIGN.md tokens: #FAFAFA canvas, #FFFFFF surfaces with 1px solid #E4E4E7 hairlines, #09090B primary ink/CTAs, Inter headings, and JetBrains Mono tabular numerals. Color is reserved strictly for RED, AMBER, and GREEN schedule status pills. The Supervisor screen (/supervisor) features only numbers (36px centered input), a photo row, optional Tamil voice/text note, and a full-width solid black Send button.'
+            'Adapted from Cal.com and Vercel DESIGN.md tokens: #FAFAFA canvas, #FFFFFF surfaces with 1px solid #E4E4E7 hairlines, #09090B primary ink/CTAs, Inter headings, and JetBrains Mono tabular numerals. Color is reserved strictly for RED, YELLOW, and GREEN schedule status pills. The Supervisor screen (/supervisor) features only numbers (36px centered input), a photo row, optional Tamil voice/text note, and a full-width solid black Send button.'
           ),
           bulletItem(
             'Deliberate Scope Cuts',

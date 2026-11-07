@@ -84,7 +84,7 @@ async function main() {
   // =========================================================================
 
   // -------------------------------------------------------------------------
-  // ORDER 1: B-PO-88213 (AMBER — 2-week early warning)
+  // ORDER 1: B-PO-88213 (YELLOW — 2-week early warning)
   // Buyer: Company B (UK), Style: "Men's crew neck tee, navy", Total Qty: 12000
   // Unit: "Unit 1", Ex-Factory: 2026-11-20, Current Stage: STITCHING
   // STITCHING completedQty: 6800, plannedEndDate: 2026-11-16 (14 days left -> 372 pcs/day needed)

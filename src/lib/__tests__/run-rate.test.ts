@@ -4,7 +4,7 @@ import { calculateOrderRunRate } from '../run-rate';
 describe('Run-Rate Delay Projection Engine (calculateOrderRunRate)', () => {
   const REF_DATE = '2026-11-02T00:00:00.000Z';
 
-  it('1. Sample Order 1 (B-PO-88213 - Navy Crew Neck Tee): surfaces AMBER 2-Week Early Warning with exact math', () => {
+  it('1. Sample Order 1 (B-PO-88213 - Navy Crew Neck Tee): surfaces YELLOW 2-Week Early Warning with exact math', () => {
     const result = calculateOrderRunRate({
       totalQty: 12000,
       completedQty: 6800,
@@ -23,7 +23,7 @@ describe('Run-Rate Delay Projection Engine (calculateOrderRunRate)', () => {
     expect(result.projectedDaysNeeded).toBe(22);
     expect(result.projectedSlipDays).toBe(8);
     expect(result.isTwoWeekEarlyWarning).toBe(true);
-    expect(result.status).toBe('AMBER');
+    expect(result.status).toBe('YELLOW');
     expect(result.mathSummary).toBe(
       'Need 372 pcs/day (5,200 left ÷ 14 days) · Making 240 pcs/day (3-day avg) · Shortfall: 132 pcs/day'
     );
@@ -176,7 +176,7 @@ describe('Run-Rate Delay Projection Engine (calculateOrderRunRate)', () => {
 
     expect(result.actualDailyRate).toBe(240);
     expect(result.requiredDailyRate).toBe(372);
-    expect(result.status).toBe('AMBER');
+    expect(result.status).toBe('YELLOW');
   });
 });
 
