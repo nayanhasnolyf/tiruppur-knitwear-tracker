@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Download, Loader2, Lock, LogOut, Printer } from 'lucide-react';
+import { Download, Loader2, Lock, Printer } from 'lucide-react';
 
 interface BuyerMeta {
   id: string;
@@ -241,24 +240,20 @@ export default function BuyerReadOnlyPortalPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {buyer && (
+            {buyer ? (
               <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs text-zinc-700">
                 <Lock className="h-3 w-3 text-zinc-400" />
-                Viewing as:{' '}
                 <strong className="text-zinc-950">
                   {buyer.name.replace(/\s*\(([^)]+)\)/g, ' · $1')}
                 </strong>{' '}
-                · Read-Only Access
+                · Verified Buyer Access · Read-Only
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs text-zinc-600">
+                <Lock className="h-3 w-3 text-zinc-400" />
+                Verified Buyer Access · Read-Only
               </span>
             )}
-
-            <Link
-              href="/login"
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:border-zinc-950 hover:text-zinc-950"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              Exit Portal
-            </Link>
           </div>
         </div>
       </div>
@@ -277,14 +272,6 @@ export default function BuyerReadOnlyPortalPage() {
             404 · Buyer Portal Access Denied
           </h1>
           <p className="mt-1 text-xs text-zinc-500">{notFoundError}</p>
-          <div className="mt-6 flex items-center justify-center">
-            <Link
-              href="/login"
-              className="rounded-md bg-zinc-950 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800"
-            >
-              Return to Sign In
-            </Link>
-          </div>
         </div>
       ) : (
         <>
