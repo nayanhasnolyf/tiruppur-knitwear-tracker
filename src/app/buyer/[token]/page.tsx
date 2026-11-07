@@ -155,6 +155,59 @@ export default function BuyerReadOnlyPortalPage() {
     fetchBuyerPortal();
   }, [fetchBuyerPortal]);
 
+  // Mask the secret access token in the browser URL bar during print/PDF generation
+  // so native browser print footers never expose `/buyer/<secret-token>`.
+  useEffect(() => {
+    const maskUrlForPrint = () => {
+      try {
+        window.history.replaceState(null, '', '/buyer/status-report');
+      } catch {
+        // Ignore history state restrictions
+      }
+    };
+
+    const restoreUrlAfterPrint = () => {
+      try {
+        if (token) {
+          window.history.replaceState(
+            null,
+            '',
+            `/buyer/${encodeURIComponent(token)}`
+          );
+        }
+      } catch {
+        // Ignore history state restrictions
+      }
+    };
+
+    window.addEventListener('beforeprint', maskUrlForPrint);
+    window.addEventListener('afterprint', restoreUrlAfterPrint);
+    return () => {
+      window.removeEventListener('beforeprint', maskUrlForPrint);
+      window.removeEventListener('afterprint', restoreUrlAfterPrint);
+    };
+  }, [token]);
+
+  const handlePrintPdf = () => {
+    try {
+      window.history.replaceState(null, '', '/buyer/status-report');
+    } catch {
+      // Ignore history state restrictions
+    }
+    window.print();
+    try {
+      if (token) {
+        window.history.replaceState(
+          null,
+          '',
+          `/buyer/${encodeURIComponent(token)}`
+        );
+      }
+    } catch {
+      // Ignore history state restrictions
+    }
+  };
+
   const handleDownloadWeeklyCsv = () => {
     if (!buyer) return;
 
@@ -304,7 +357,7 @@ export default function BuyerReadOnlyPortalPage() {
 
               <button
                 type="button"
-                onClick={() => window.print()}
+                onClick={handlePrintPdf}
                 className="inline-flex h-9 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:border-zinc-950 hover:text-zinc-950"
               >
                 <Printer className="h-3.5 w-3.5" />
