@@ -213,8 +213,8 @@ async function generateDocx() {
             'November export schedules operate staggered 7-day shifts; daysLeftToStageEnd and daysLeftToExFactory use UTC midnight day differences.'
           ),
           bulletItem(
-            '[ASSUMPTION-07] Strict Buyer Gatekeeper & Tenant Isolation',
-            'Buyer portals (/buyer/[token]) query strictly by buyer.accessToken and strip all unconfirmed floor notes (isMerchandiserConfirmed === false) and internal AI confidence metrics.'
+            '[ASSUMPTION-07] Strict Buyer Gatekeeper, Token Entry & Print Redaction',
+            'Buyer portals (/buyer/[token]) query strictly by buyer.accessToken (entered via direct URL or the token input box on /login with demo token pills uk-company-b-readonly-2026 and de-company-c-readonly-2026 so customer names and PO numbers are never listed publicly) and strip all unconfirmed floor notes (isMerchandiserConfirmed === false) and internal AI confidence metrics. Print/PDF exports use @page { size: A4; margin: 0mm; } and beforeprint/afterprint history.replaceState URL masking (/buyer/status-report) so secret tokens never leak in printed PDF footers.'
           ),
 
           // Section 3
@@ -292,7 +292,7 @@ async function generateDocx() {
           heading1('5. UI Design System (DESIGN.md) & Scope Cuts'),
           bulletItem(
             '95% Monochrome Hairline System (DESIGN.md)',
-            'Adapted from Cal.com and Vercel DESIGN.md tokens: #FAFAFA canvas, #FFFFFF surfaces with 1px solid #E4E4E7 hairlines, #09090B primary ink/CTAs, Inter headings, and JetBrains Mono tabular numerals. Color is reserved strictly for RED, YELLOW, and GREEN schedule status pills. The Supervisor screen (/supervisor) features only numbers (36px centered input), a photo row, optional Tamil voice/text note, and a full-width solid black Send button.'
+            'Adapted from Cal.com and Vercel DESIGN.md tokens: #FAFAFA canvas, #FFFFFF surfaces with 1px solid #E4E4E7 hairlines, #09090B primary ink/CTAs, Inter headings, and JetBrains Mono tabular numerals. Color is reserved strictly for RED, YELLOW, and GREEN schedule status pills, with clean production labels (zero parenthetical hints). The Supervisor screen (/supervisor) enforces strict Tamil vs English mode separation and features only numbers (36px centered input), a photo row, optional Tamil voice/text note, and a full-width solid black Send button. The standalone Buyer Portal (/buyer/[token]) protects secret access tokens during PDF printing via @page margin suppression and beforeprint/afterprint URL masking (/buyer/status-report).'
           ),
           bulletItem(
             'Deliberate Scope Cuts',

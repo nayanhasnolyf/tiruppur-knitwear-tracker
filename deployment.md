@@ -59,7 +59,7 @@ npm run dev
 
 ## 4. Demo Login Credentials & 1-Click Reviewer Walkthrough
 
-Unauthenticated visitors to `/`, `/orders/*`, or `/supervisor` are automatically redirected by `src/middleware.ts` to **`/login`**. For zero-friction evaluation, **`/login`** includes **1-Click Reviewer Persona Buttons** (Merchandiser, Supervisor Unit 1, Supervisor Unit 2, and direct links to both Isolated Buyer Portals) in addition to standard email/password sign-in (`demo123`):
+Unauthenticated visitors to `/`, `/orders/*`, or `/supervisor` are automatically redirected by `src/middleware.ts` to **`/login`**. For zero-friction evaluation while preserving tenant privacy, **`/login`** includes **1-Click Internal Demo Persona Buttons** (Merchandiser, Supervisor Unit 1, Supervisor Unit 2) and an **External Buyer Portal Token Access** input form (with clickable evaluation demo token pills `uk-company-b-readonly-2026` and `de-company-c-readonly-2026` so private buyer names and PO numbers are never listed publicly on the login screen):
 
 ### Internal Staff Accounts (Password for all: `demo123`)
 | Role | Name | Email | Password | Assigned Unit | Primary View |
@@ -68,12 +68,12 @@ Unauthenticated visitors to `/`, `/orders/*`, or `/supervisor` are automatically
 | **SUPERVISOR** | Murugan K | `supervisor1@tiruppurknit.com` | `demo123` | Unit 1 (Stitching/Printing) | `/supervisor` (Mobile Tamil/EN Floor App) |
 | **SUPERVISOR** | Senthil V | `supervisor2@tiruppurknit.com` | `demo123` | Unit 2 (Finishing/Packing) | `/supervisor` (Mobile Tamil/EN Floor App) |
 
-### Isolated Read-Only Buyer Portals (Token-Scoped, No Login Required)
-Each buyer portal link is strictly isolated by `accessToken` so one buyer can never see another buyer's orders, styles, or volumes, and **only** Merchandiser-confirmed warnings are visible:
-1. **Company B (UK) Portal**: `/buyer/uk-company-b-readonly-2026`
+### Isolated Read-Only Buyer Portals (Token-Scoped, Print-Redacted, No Login Required)
+Each buyer portal link is strictly isolated by `accessToken` so one buyer can never see another buyer's orders, styles, or volumes, and **only** Merchandiser-confirmed warnings are visible. Furthermore, when exporting or printing the portal to PDF (`Print PDF` or `Ctrl+P`), a two-layer defense (`@page { size: A4; margin: 0mm; }` in `src/app/globals.css` plus `beforeprint`/`afterprint` `window.history.replaceState` URL path masking to `/buyer/status-report`) ensures the secret `accessToken` is never exposed in printed PDF footers:
+1. **Company B · UK Portal** (Demo Token: `uk-company-b-readonly-2026` → `/buyer/uk-company-b-readonly-2026`)
    - Displays **only** `B-PO-88213` (Men's crew neck tee, navy — 12,000 pcs) and `B-PO-88240` (Men's polo, white — 8,000 pcs).
    - Demonstrates the Merchandiser Confirmation Gate: `B-PO-88240`'s confirmed collar stain rework advisory is visible to the buyer, whereas `B-PO-88213`'s unconfirmed needle-plate breakdown note is withheld until the Merchandiser clicks **"Confirm & Share with Buyer"** on `/orders/[id]`.
-2. **Company C (Germany) Portal**: `/buyer/de-company-c-readonly-2026`
+2. **Company C · Germany Portal** (Demo Token: `de-company-c-readonly-2026` → `/buyer/de-company-c-readonly-2026`)
    - Displays **only** `C-PO-0488` (Kids printed tee, yellow — 10,000 pcs, `GREEN · ON TRACK`).
 3. **Invalid Token Test (404 Access Denied)**: `/buyer/invalid-forged-token-test`
    - Verifies that unknown or expired tokens are rejected with a 404 Access Denied boundary.

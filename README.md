@@ -22,8 +22,8 @@
    - Displays Original Tamil side-by-side with AI English translation, flags `<70%` low-confidence/vague notes or missing/unreachable API errors for manual review, lets Merchandisers override the AI category, and **withholds warnings from buyers until explicitly confirmed by a Merchandiser**.
 4. **Compliance Date-Change Audit Trail**:
    - Every change to a TNA milestone date or Ex-Factory date requires a mandatory compliance justification and records `oldDate`, `newDate`, `changedByUser`, and `changeReason`.
-5. **Isolated Read-Only Buyer Portals (`/buyer/[token]`) & 1-Click Weekly CSV/PDF Export**:
-   - Token-scoped portals for `Company B (UK)` and `Company C (Germany)` with strict tenant isolation and 1-click Weekly Status CSV/Excel and Printable PDF export.
+5. **Isolated Read-Only Buyer Portals (`/buyer/[token]`) & Print-Protected Weekly CSV/PDF Export**:
+   - Token-scoped portals for `Company B · UK` (`uk-company-b-readonly-2026`) and `Company C · Germany` (`de-company-c-readonly-2026`) accessible via direct URL or the token input form on `/login` (preventing public listing of customer names and PO numbers). Includes strict tenant isolation, 1-click Weekly Status CSV/Excel export, and two-layer PDF print security (`@page` margin suppression + `beforeprint`/`afterprint` URL masking to `/buyer/status-report`) so secret buyer tokens never leak in printed PDF footers.
 
 ---
 
