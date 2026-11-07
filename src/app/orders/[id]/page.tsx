@@ -398,7 +398,12 @@ export default function OrderDetailPage() {
           href={`/buyer/${order.buyer.accessToken}`}
           className="inline-flex h-8 items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 transition hover:border-zinc-950 hover:text-zinc-950"
         >
-          Preview {order.buyer.name} Portal
+          Preview{' '}
+          {order.buyer.name
+            .replace(/\s*\([^)]*\)/g, '')
+            .replace(/\s*·\s*.*$/, '')
+            .trim()}{' '}
+          Portal
           <ExternalLink className="h-3 w-3" />
         </Link>
       </div>
@@ -426,7 +431,11 @@ export default function OrderDetailPage() {
 
             <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
               <span>
-                {order.buyer.name} ({order.buyer.country})
+                {order.buyer.name
+                  .replace(/\s*\([^)]*\)/g, '')
+                  .replace(/\s*·\s*.*$/, '')
+                  .trim()}{' '}
+                · {order.buyer.country}
               </span>
               <span>·</span>
               <span>{order.productionUnit}</span>
@@ -472,15 +481,15 @@ export default function OrderDetailPage() {
         <div className="grid grid-cols-2 divide-y divide-zinc-200 border-t border-zinc-200 bg-zinc-50/40 sm:grid-cols-5 sm:divide-x sm:divide-y-0">
           <div className="p-4">
             <div className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-              Active Stage ({order.currentStage})
+              Active Stage · {order.currentStage}
             </div>
             <div className="mt-1 font-mono text-lg font-semibold text-zinc-950 tabular-nums">
               {runRate.remainingQty.toLocaleString()} left
             </div>
             <div className="font-mono text-[11px] text-zinc-500 tabular-nums">
               {runRate.completedQty.toLocaleString()} /{' '}
-              {runRate.totalQty.toLocaleString()} (
-              {runRate.completionPercentage}%)
+              {runRate.totalQty.toLocaleString()} ·{' '}
+              {runRate.completionPercentage}%
             </div>
           </div>
 
@@ -498,7 +507,7 @@ export default function OrderDetailPage() {
 
           <div className="p-4">
             <div className="text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-              Actual (3d Avg)
+              Actual 3D Rate
             </div>
             <div className="mt-1 font-mono text-lg font-semibold text-zinc-950 tabular-nums">
               {runRate.actualDailyRate}/d
@@ -546,7 +555,12 @@ export default function OrderDetailPage() {
 
         {/* Formula Footer Line */}
         <div className="border-t border-zinc-200 bg-zinc-100/60 px-6 py-2.5 font-mono text-xs text-zinc-600 tabular-nums">
-          {runRate.mathSummary}
+          Need {runRate.requiredDailyRate}/d ·{' '}
+          {runRate.remainingQty.toLocaleString()} left ÷{' '}
+          {runRate.daysLeftToStageEnd}d · Actual {runRate.actualDailyRate}/d ·{' '}
+          {runRate.dailyShortfallOrSurplus < 0
+            ? `Shortfall ${Math.abs(runRate.dailyShortfallOrSurplus)}/d`
+            : `Surplus +${runRate.dailyShortfallOrSurplus}/d`}
         </div>
       </div>
 
@@ -621,7 +635,7 @@ export default function OrderDetailPage() {
                         </div>
                         <span className="font-mono text-xs text-zinc-700 tabular-nums">
                           {m.completedQty.toLocaleString()} /{' '}
-                          {m.targetQty.toLocaleString()} ({pct}%)
+                          {m.targetQty.toLocaleString()} · {pct}%
                         </span>
                       </div>
                     </td>
@@ -708,9 +722,12 @@ export default function OrderDetailPage() {
                       +{u.qtyDoneToday.toLocaleString()} pcs
                     </span>
                     {u.supervisor && (
-                      <span className="text-zinc-400">
-                        ({u.supervisor.name})
-                      </span>
+                      <>
+                        <span className="text-zinc-300">·</span>
+                        <span className="text-zinc-500">
+                          {u.supervisor.name}
+                        </span>
+                      </>
                     )}
                   </div>
 
@@ -724,7 +741,7 @@ export default function OrderDetailPage() {
                     >
                       {u.isMerchandiserConfirmed
                         ? 'Confirmed for Buyer Portal'
-                        : 'Withheld from Buyer (Unconfirmed)'}
+                        : 'Withheld from Buyer · Unconfirmed'}
                     </span>
                   )}
                 </div>
@@ -785,7 +802,7 @@ export default function OrderDetailPage() {
                             </p>
                             {u.needsManualReview && (
                               <div className="mt-2 rounded border border-[#FDE68A] bg-[#FFFBEB] px-2.5 py-1.5 font-mono text-[11px] text-[#B45309]">
-                                Low AI confidence ({confidencePct ?? 0}%) —
+                                Low AI confidence · {confidencePct ?? 0}% —
                                 Merchandiser manual verification required before
                                 buyer release.
                               </div>
@@ -932,7 +949,7 @@ export default function OrderDetailPage() {
                     </td>
                     <td className="px-4 py-3 font-mono font-medium text-zinc-950">
                       {audit.milestone
-                        ? `${audit.milestone.stageName} (${audit.fieldChanged})`
+                        ? `${audit.milestone.stageName} · ${audit.fieldChanged}`
                         : audit.fieldChanged}
                     </td>
                     <td className="px-4 py-3 font-mono tabular-nums">
@@ -1004,7 +1021,7 @@ export default function OrderDetailPage() {
 
               <div>
                 <label className="block text-xs font-medium text-zinc-700">
-                  Compliance Reason (Required)
+                  Compliance Reason
                 </label>
                 <textarea
                   rows={3}

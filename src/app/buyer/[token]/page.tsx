@@ -244,7 +244,11 @@ export default function BuyerReadOnlyPortalPage() {
             {buyer && (
               <span className="inline-flex items-center gap-1.5 rounded-md border border-zinc-200 bg-zinc-50 px-2.5 py-1 font-mono text-xs text-zinc-700">
                 <Lock className="h-3 w-3 text-zinc-400" />
-                Viewing as: <strong className="text-zinc-950">{buyer.name}</strong> · Read-Only Access
+                Viewing as:{' '}
+                <strong className="text-zinc-950">
+                  {buyer.name.replace(/\s*\(([^)]+)\)/g, ' · $1')}
+                </strong>{' '}
+                · Read-Only Access
               </span>
             )}
 
@@ -292,11 +296,12 @@ export default function BuyerReadOnlyPortalPage() {
                 <span>Read-Only Buyer Status Portal · {buyer.country}</span>
               </div>
               <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-zinc-950">
-                {buyer.name}
+                {buyer.name.replace(/\s*\(([^)]+)\)/g, ' · $1')}
               </h1>
               <p className="mt-1 text-xs text-zinc-500">
-                Supplier: Company A (Tiruppur) · Scoped to {orders.length}{' '}
-                active purchase order(s) · Report Date: 02 Nov 2026
+                Supplier: Company A · Tiruppur · Scoped to {orders.length}{' '}
+                active purchase {orders.length === 1 ? 'order' : 'orders'} ·
+                Report Date: 02 Nov 2026
               </p>
             </div>
 
@@ -392,12 +397,16 @@ export default function BuyerReadOnlyPortalPage() {
                     </div>
                   </div>
 
-                  {/* Confirmed Merchandiser Advisory (Only if confirmed!) */}
+                  {/* Confirmed Merchandiser Advisory */}
                   {hasConfirmedWarning && (
                     <div className="border-t border-[#FDE68A] bg-[#FFFBEB] px-6 py-3.5 text-xs text-[#B45309]">
                       <span className="font-mono text-[11px] font-semibold uppercase tracking-wider">
-                        Confirmed Advisory (
-                        {order.confirmedWarnings[0].reasonCategory}):{' '}
+                        Confirmed Advisory ·{' '}
+                        {order.confirmedWarnings[0].reasonCategory?.replace(
+                          /_/g,
+                          ' '
+                        )}
+                        :{' '}
                       </span>
                       <span className="text-zinc-900">
                         “{order.confirmedWarnings[0].buyerSummaryNote}”
@@ -477,8 +486,8 @@ export default function BuyerReadOnlyPortalPage() {
                   {order.dateChangeAudits.length > 0 && (
                     <div className="border-t border-zinc-200 bg-zinc-50/40 px-6 py-4">
                       <div className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                        Compliance Schedule Revisions (
-                        {order.dateChangeAudits.length})
+                        Compliance Schedule Revisions ·{' '}
+                        {order.dateChangeAudits.length}
                       </div>
                       <div className="mt-2 space-y-1.5 text-xs">
                         {order.dateChangeAudits.map((a) => (

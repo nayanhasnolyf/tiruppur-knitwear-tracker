@@ -17,39 +17,39 @@ import {
 const OFFLINE_QUEUE_STORAGE_KEY = 'tiruppur_offline_floor_queue';
 
 const STAGE_TAMIL_LABELS: Record<string, string> = {
-  CUTTING: 'கட்டிங் (Cutting)',
-  PRINTING: 'பிரிண்டிங் (Printing)',
-  STITCHING: 'தையல் (Stitching)',
-  WASHING: 'வாஷிங் (Washing)',
-  FINISHING: 'பினிஷிங் (Finishing)',
+  CUTTING: 'கட்டிங்',
+  PRINTING: 'பிரிண்டிங்',
+  STITCHING: 'தையல்',
+  WASHING: 'வாஷிங்',
+  FINISHING: 'பினிஷிங்',
 };
 
 const SAMPLE_TAMIL_CHIPS = [
   {
     id: 'machine',
-    badgeEn: 'Machine Breakdown (High Conf)',
-    badgeTa: 'இயந்திரப் பழுது (ஊசி உடைந்தது)',
+    badgeEn: 'Machine Breakdown',
+    badgeTa: 'இயந்திரப் பழுது · ஊசி உடைந்தது',
     tamilText:
       'ஊசி தட்டு உடைந்துவிட்டது, 2 தையல் இயந்திரங்கள் இன்று 3 மணி நேரம் வேலை செய்யவில்லை',
   },
   {
     id: 'rework',
-    badgeEn: 'Collar Stain Rework (High Conf)',
-    badgeTa: 'காலர் எண்ணெய் கறை (ரீ-வாஷிங்)',
+    badgeEn: 'Collar Stain Rework',
+    badgeTa: 'காலர் எண்ணெய் கறை · ரீ-வாஷிங்',
     tamilText:
       'காலர் பகுதியில் எண்ணெய் கறை உள்ளது, 120 பீஸ் மறுபடியும் வாஷிங் செய்ய வேண்டும்',
   },
   {
     id: 'power',
-    badgeEn: 'Power Cut (High Conf)',
-    badgeTa: 'மின்சாரம் தடை (ஜெனரேட்டர் பழுது)',
+    badgeEn: 'Power Cut',
+    badgeTa: 'மின்சாரம் தடை · ஜெனரேட்டர் பழுது',
     tamilText:
       'மின்சாரம் தடைபட்டது, ஜெனரேட்டர் பழுது காரணமாக 2 மணி நேரம் தாமதம்',
   },
   {
     id: 'vague',
-    badgeEn: 'Vague Note (<70% Conf Guardrail)',
-    badgeTa: 'தெளிவற்ற குறிப்பு (AI சந்தேக சோதனை)',
+    badgeEn: 'General Slowdown',
+    badgeTa: 'தெளிவற்ற குறிப்பு',
     tamilText: 'இன்று வேலை சற்று மெதுவாக நடக்கிறது',
   },
 ];
@@ -304,7 +304,7 @@ export default function SupervisorMobilePage() {
         title:
           lang === 'ta'
             ? `${syncedCount} ஆஃப்லைன் பதிவுகள் ஒத்திசைக்கப்பட்டன`
-            : `Synced ${syncedCount} offline update(s)`,
+            : `Synced ${syncedCount} offline ${syncedCount === 1 ? 'update' : 'updates'}`,
         detail:
           lang === 'ta'
             ? 'Idempotent clientSubmissionId சரிபார்க்கப்பட்டது.'
@@ -420,7 +420,7 @@ export default function SupervisorMobilePage() {
         type: 'offline',
         title:
           lang === 'ta'
-            ? 'ஆஃப்லைனில் சேமிக்கப்பட்டது (Saved to Offline Queue)'
+            ? 'ஆஃப்லைனில் சேமிக்கப்பட்டது'
             : 'Saved to Phone Offline Queue',
         detail: `${selectedOrder.poNumber}: +${parsedQty} pcs queued locally.`,
       });
@@ -452,7 +452,7 @@ export default function SupervisorMobilePage() {
         type: 'success',
         title:
           lang === 'ta'
-            ? `பதிவு செய்யப்பட்டது (+${parsedQty} பீஸ்)`
+            ? `பதிவு செய்யப்பட்டது · +${parsedQty} பீஸ்`
             : `Logged +${parsedQty.toLocaleString()} pcs`,
         detail: `${selectedOrder.poNumber} · ${selectedOrder.activeMilestone.stageName}`,
         aiTranslation: created.aiEnglishTranslation,
@@ -522,7 +522,7 @@ export default function SupervisorMobilePage() {
           </div>
         </div>
 
-        {/* Offline Queue Strip (Only visible when items queued) */}
+        {/* Offline Queue Strip */}
         {offlineQueue.length > 0 && (
           <div className="flex items-center justify-between border-b border-[#FDE68A] bg-[#FFFBEB] px-6 py-3 text-xs text-[#B45309]">
             <div>
@@ -530,7 +530,7 @@ export default function SupervisorMobilePage() {
                 {offlineQueue.length} queued offline
               </span>
               <span className="ml-2 font-mono text-[11px]">
-                ({offlineQueue.map((q) => `+${q.qtyDoneToday}`).join(', ')})
+                · {offlineQueue.map((q) => `+${q.qtyDoneToday}`).join(', ')}
               </span>
             </div>
             <button
@@ -577,7 +577,7 @@ export default function SupervisorMobilePage() {
                 </div>
               ) : (
                 <div className="mt-1.5 font-mono text-[11px] text-zinc-800">
-                  AI ({feedbackBanner.aiCategory}): “
+                  AI · {feedbackBanner.aiCategory}: “
                   {feedbackBanner.aiTranslation}”
                 </div>
               ))}
@@ -590,7 +590,7 @@ export default function SupervisorMobilePage() {
           <div>
             <div className="flex items-center justify-between">
               <label className="block text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                {lang === 'ta' ? 'ஆர்டர் (Order & Stage)' : 'Order & Stage'}
+                {lang === 'ta' ? 'ஆர்டர்' : 'Order & Stage'}
               </label>
               {selectedOrder && (
                 <span className="font-mono text-[11px] text-zinc-500">
@@ -627,12 +627,12 @@ export default function SupervisorMobilePage() {
               >
                 {orders.map((o) => (
                   <option key={o.id} value={o.id}>
-                    {o.poNumber} ·{' '}
+                    {o.poNumber} · {o.styleName} ·{' '}
                     {lang === 'ta'
                       ? STAGE_TAMIL_LABELS[o.currentStage] || o.currentStage
                       : o.currentStage}{' '}
-                    ({o.activeMilestone?.completedQty.toLocaleString()}/
-                    {o.activeMilestone?.targetQty.toLocaleString()} pcs)
+                    · {o.activeMilestone?.completedQty.toLocaleString()}/
+                    {o.activeMilestone?.targetQty.toLocaleString()} pcs
                   </option>
                 ))}
               </select>
@@ -644,8 +644,8 @@ export default function SupervisorMobilePage() {
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
                 {lang === 'ta'
-                  ? 'இன்று முடித்த எண்ணிக்கை (Pieces Today)'
-                  : 'Pieces Completed Today'}
+                  ? 'இன்று முடித்த எண்ணிக்கை'
+                  : 'Pieces Today'}
               </label>
               <span className="font-mono text-[11px] text-zinc-400">PCS</span>
             </div>
@@ -689,7 +689,7 @@ export default function SupervisorMobilePage() {
           <div>
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                {lang === 'ta' ? 'புகைப்படம் (Photo)' : 'Photo (Optional)'}
+                {lang === 'ta' ? 'புகைப்படம்' : 'Photo'}
               </label>
               {photoUrl && (
                 <button
@@ -742,9 +742,7 @@ export default function SupervisorMobilePage() {
           <div>
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-medium uppercase tracking-wider text-zinc-400">
-                {lang === 'ta'
-                  ? 'குறிப்பு - தமிழ் (Optional Note)'
-                  : 'Tamil Floor Note (Optional)'}
+                {lang === 'ta' ? 'குறிப்பு' : 'Floor Note'}
               </label>
 
               <div className="flex items-center gap-2">
@@ -773,12 +771,12 @@ export default function SupervisorMobilePage() {
                   {isListeningVoice ? (
                     <>
                       <MicOff className="h-3 w-3" />
-                      Listening
+                      {lang === 'ta' ? 'கேட்கிறது' : 'Listening'}
                     </>
                   ) : (
                     <>
                       <Mic className="h-3 w-3" />
-                      Voice (ta)
+                      {lang === 'ta' ? 'குரல் பதிவு' : 'Voice Input'}
                     </>
                   )}
                 </button>
@@ -792,7 +790,7 @@ export default function SupervisorMobilePage() {
               placeholder={
                 lang === 'ta'
                   ? 'எ.கா: ஊசி தட்டு உடைந்துவிட்டது...'
-                  : 'Optional blocker note in Tamil...'
+                  : 'Enter floor blocker note in Tamil...'
               }
               className="mt-1.5 w-full rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-950 focus:outline-none"
             />
@@ -831,14 +829,14 @@ export default function SupervisorMobilePage() {
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : isOffline ? (
               lang === 'ta' ? (
-                'ஆஃப்லைனில் சேமி (Save Offline)'
+                'ஆஃப்லைனில் சேமி'
               ) : (
-                'Save to Offline Queue'
+                'Save Offline'
               )
             ) : lang === 'ta' ? (
-              'அனுப்பு (Send Update)'
+              'அனுப்பு'
             ) : (
-              'Send Floor Update'
+              'Send Update'
             )}
           </button>
         </form>

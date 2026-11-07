@@ -102,6 +102,10 @@ function formatShortDate(dateStr: string): string {
   });
 }
 
+function formatBuyerDisplay(name: string): string {
+  return name.replace(/\s*\(([^)]+)\)/g, ' · $1');
+}
+
 export default function MerchandiserOrderBoardPage() {
   const [orders, setOrders] = useState<OrderCardData[]>([]);
   const [buyers, setBuyers] = useState<BuyerInfo[]>([]);
@@ -445,7 +449,7 @@ export default function MerchandiserOrderBoardPage() {
             <option value="ALL">All Buyers</option>
             {buyers.map((b) => (
               <option key={b.id} value={b.id}>
-                {b.name}
+                {formatBuyerDisplay(b.name)}
               </option>
             ))}
           </select>
@@ -523,7 +527,7 @@ export default function MerchandiserOrderBoardPage() {
           <div className="hidden grid-cols-12 border-b border-zinc-200 bg-zinc-100/70 px-6 py-2.5 text-[11px] font-medium uppercase tracking-wider text-zinc-400 lg:grid">
             <div className="col-span-3">Order &amp; Style</div>
             <div className="col-span-3">Stage &amp; TNA Progress</div>
-            <div className="col-span-4">Run-Rate Math (3-Day Avg vs Need)</div>
+            <div className="col-span-4">Run-Rate &amp; Pace</div>
             <div className="col-span-2 text-right">Schedule Status</div>
           </div>
 
@@ -572,7 +576,7 @@ export default function MerchandiserOrderBoardPage() {
                       {order.styleName}
                     </div>
                     <div className="mt-1 text-xs text-zinc-500">
-                      {order.buyer.name} · {order.productionUnit}
+                      {formatBuyerDisplay(order.buyer.name)} · {order.productionUnit}
                     </div>
                   </div>
 
@@ -584,8 +588,8 @@ export default function MerchandiserOrderBoardPage() {
                       </span>
                       <span className="font-mono text-xs text-zinc-500 tabular-nums">
                         {runRate.completedQty.toLocaleString()} /{' '}
-                        {runRate.totalQty.toLocaleString()} (
-                        {runRate.completionPercentage}%)
+                        {runRate.totalQty.toLocaleString()} ·{' '}
+                        {runRate.completionPercentage}%
                       </span>
                     </div>
 
@@ -647,6 +651,7 @@ export default function MerchandiserOrderBoardPage() {
                           {runRate.actualDailyRate}/d
                         </strong>
                       </span>
+                      <span className="text-zinc-300">·</span>
                       <span
                         className={`font-semibold ${
                           runRate.dailyShortfallOrSurplus < 0
@@ -654,16 +659,16 @@ export default function MerchandiserOrderBoardPage() {
                             : 'text-[#047857]'
                         }`}
                       >
-                        ({runRate.dailyShortfallOrSurplus > 0 ? '+' : ''}
-                        {runRate.dailyShortfallOrSurplus}/d)
+                        {runRate.dailyShortfallOrSurplus > 0 ? '+' : ''}
+                        {runRate.dailyShortfallOrSurplus}/d
                       </span>
                     </div>
 
                     <div className="mt-1 font-mono text-[11px] text-zinc-500 tabular-nums">
                       {runRate.remainingQty.toLocaleString()} left ÷{' '}
                       {runRate.daysLeftToStageEnd}d · Ex-Factory{' '}
-                      {formatDate(order.exFactoryDate)} (
-                      {runRate.daysLeftToExFactory}d left)
+                      {formatDate(order.exFactoryDate)} ·{' '}
+                      {runRate.daysLeftToExFactory}d left
                     </div>
 
                     {latestFloorUpdate?.rawNoteTamil && (

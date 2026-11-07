@@ -201,7 +201,7 @@ export default function NewOrderModal({
               >
                 {buyers.map((b) => (
                   <option key={b.id} value={b.id}>
-                    {b.name}
+                    {b.name.replace(/\s*\(([^)]+)\)/g, ' · $1')}
                   </option>
                 ))}
               </select>
@@ -270,7 +270,7 @@ export default function NewOrderModal({
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-medium text-zinc-700">
-                Size Breakdown (Pieces)
+                Size Breakdown · Pieces
               </span>
               <span className="font-mono text-xs font-semibold text-zinc-950 tabular-nums">
                 Total: {totalQty.toLocaleString()} pcs
@@ -316,7 +316,7 @@ export default function NewOrderModal({
                     : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                 }`}
               >
-                <div className="font-semibold">Solid / Dyed (4 Stages)</div>
+                <div className="font-semibold">Solid / Dyed · 4 Stages</div>
                 <div
                   className={`mt-0.5 font-mono text-[10px] ${
                     templateType === 'SOLID_BASIC'
@@ -337,7 +337,7 @@ export default function NewOrderModal({
                     : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50'
                 }`}
               >
-                <div className="font-semibold">Printed Tee (5 Stages)</div>
+                <div className="font-semibold">Printed Tee · 5 Stages</div>
                 <div
                   className={`mt-0.5 font-mono text-[10px] ${
                     templateType === 'PRINTED_TEE'
@@ -354,7 +354,7 @@ export default function NewOrderModal({
               {previewMilestones.map((m, idx) => (
                 <React.Fragment key={m.stage}>
                   <span>
-                    {m.stage} ({m.plannedEnd})
+                    {m.stage} · {m.plannedEnd}
                   </span>
                   {idx < previewMilestones.length - 1 && (
                     <span className="text-zinc-300">→</span>

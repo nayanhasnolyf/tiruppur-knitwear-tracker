@@ -20,7 +20,7 @@ const DEMO_ACCOUNTS = [
     role: 'SUPERVISOR',
     unit: 'Unit 1',
     targetPath: '/supervisor',
-    description: 'Mobile floor entry (தமிழ் / EN) for B-PO-88213 & C-PO-0488.',
+    description: 'Mobile floor entry · தமிழ் / EN · B-PO-88213 & C-PO-0488.',
   },
   {
     name: 'Senthil V',
@@ -28,7 +28,7 @@ const DEMO_ACCOUNTS = [
     role: 'SUPERVISOR',
     unit: 'Unit 2',
     targetPath: '/supervisor',
-    description: 'Mobile floor entry (தமிழ் / EN) for B-PO-88240.',
+    description: 'Mobile floor entry · தமிழ் / EN · B-PO-88240.',
   },
 ];
 
@@ -219,7 +219,7 @@ export default function LoginPage() {
           <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
             <div className="border-b border-zinc-200 bg-zinc-100/60 px-5 py-3">
               <h3 className="text-xs font-medium uppercase tracking-wider text-zinc-500">
-                Read-Only Buyer Portals (Token Scoped)
+                Read-Only Buyer Portals · Token Scoped
               </h3>
             </div>
             <div className="grid divide-y divide-zinc-200 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
@@ -229,7 +229,7 @@ export default function LoginPage() {
               >
                 <div>
                   <div className="font-semibold text-zinc-950">
-                    Company B (UK)
+                    Company B · UK
                   </div>
                   <div className="font-mono text-[11px] text-zinc-500">
                     B-PO-88213, B-PO-88240
@@ -244,7 +244,7 @@ export default function LoginPage() {
               >
                 <div>
                   <div className="font-semibold text-zinc-950">
-                    Company C (Germany)
+                    Company C · Germany
                   </div>
                   <div className="font-mono text-[11px] text-zinc-500">
                     C-PO-0488

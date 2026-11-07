@@ -61,7 +61,7 @@ async function main() {
   // 2. Seed 2 Buyers with deterministic accessToken strings
   const buyerB = await prisma.buyer.create({
     data: {
-      name: 'Company B (UK)',
+      name: 'Company B · UK',
       country: 'United Kingdom',
       contactEmail: 'sourcing@companyb.co.uk',
       accessToken: 'uk-company-b-readonly-2026',
@@ -70,7 +70,7 @@ async function main() {
 
   const buyerC = await prisma.buyer.create({
     data: {
-      name: 'Company C (Germany)',
+      name: 'Company C · Germany',
       country: 'Germany',
       contactEmail: 'buying@companyc.de',
       accessToken: 'de-company-c-readonly-2026',
